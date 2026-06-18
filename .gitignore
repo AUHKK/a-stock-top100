@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+diagnose_*.py
+verify_fix.py
+.workbuddy/
+.top100_cache.json

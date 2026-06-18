@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>A股成交额 TOP100 | 历史回顾</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",-apple-system,sans-serif;background:#f0f2f5;color:#333;font-size:13px;line-height:1.5}
+.hd{background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;padding:15px 25px;box-shadow:0 2px 10px rgba(0,0,0,.2);position:sticky;top:0;z-index:100}
+.hd h1{font-size:20px;font-weight:700}
+.hd .sub{font-size:12px;opacity:.8;display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:3px}
+.hd .bdg{background:rgba(255,255,255,.15);padding:2px 10px;border-radius:10px;font-size:11px}
+.dn{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.dn label{font-size:12px;opacity:.9}
+.dn input[type="date"]{padding:3px 8px;border:1px solid rgba(255,255,255,.3);border-radius:4px;font-size:12px;background:rgba(255,255,255,.12);color:#fff;outline:none;cursor:pointer}
+.dn input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1)}
+.dn .nb{display:inline-flex;align-items:center;gap:4px}
+.dn button{padding:3px 12px;border:1px solid rgba(255,255,255,.3);border-radius:4px;background:rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;transition:background .2s}
+.dn button:hover{background:rgba(255,255,255,.25)}
+.dn button:disabled{opacity:.35;cursor:not-allowed}
+.dn .cd{font-size:13px;font-weight:600;padding:2px 10px;background:rgba(255,255,255,.15);border-radius:4px}
+.dn .av{font-size:11px;opacity:.7}
+.sb{display:flex;gap:12px;padding:12px 25px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);flex-wrap:wrap}
+.sc{background:#f8f9fa;border-radius:8px;padding:8px 14px;text-align:center;min-width:90px;border:1px solid #e9ecef;flex:1}
+.sc .v{font-size:20px;font-weight:700}
+.sc .l{font-size:11px;color:#888;margin-top:2px}
+.sc.r .v{color:#e74c3c}
+.sc.g .v{color:#27ae60}
+.sc.t .v{color:#2c3e50}
+.ip{display:flex;gap:10px;padding:10px 25px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);flex-wrap:wrap}
+.ic{background:#f8f9fa;border-radius:8px;padding:8px 12px;min-width:130px;border:2px solid transparent;flex:1;max-width:200px}
+.ic .n{font-size:11px;color:#666;font-weight:500}
+.ic .v{font-size:17px;font-weight:700}
+.ic .chg{font-size:11px;margin:2px 0}
+.ic .rw{display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:2px 6px;border-radius:3px;margin-top:2px}
+.ic .rw.up{background:#ffe0e0;color:#e74c3c}
+.ic .rw.sh{background:#fff8e1;color:#f57f17}
+.ic .rw.dn{background:#e0f5e9;color:#27ae60}
+.c-up{color:#e74c3c}
+.c-dn{color:#27ae60}
+.tc{margin:0 25px 20px;background:#fff;border-radius:0 0 8px 8px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow-x:auto}
+.tb{display:flex;justify-content:space-between;align-items:center;padding:8px 15px;background:#fafafa;border-bottom:1px solid #e9ecef}
+.tb .info{font-size:12px;color:#888}
+.tb input{padding:5px 10px;border:1px solid #ddd;border-radius:4px;font-size:12px;width:200px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f5f6fa;padding:8px 5px;text-align:center;font-weight:600;color:#555;border-bottom:2px solid #e0e0e0;white-space:nowrap;position:sticky;top:0;z-index:40}
+th.st{cursor:pointer;user-select:none}
+th.st:hover{background:#ebeef5}
+th.sd{color:#e74c3c}
+th.sd::after{content:" ▼";font-size:10px}
+th.sd.asc::after{content:" ▲"}
+td{padding:6px 5px;text-align:center;border-bottom:1px solid #f0f0f0;white-space:nowrap}
+tr:hover{background:#f0f7ff}
+tr:nth-child(even){background:#fafbfc}
+tr:nth-child(even):hover{background:#f0f7ff}
+.rk{font-weight:700}
+.rk.t3{color:#e74c3c;font-size:14px}
+.rk.t10{color:#f39c12}
+.sn{font-weight:600;color:#2c3e50}
+.scd{color:#888;font-size:11px}
+.itg{display:inline-block;background:#e8f0fe;color:#1967d2;padding:2px 6px;border-radius:3px;font-size:10px;margin:1px;max-width:85px;overflow:hidden;text-overflow:ellipsis}
+.gu{color:#e74c3c}
+.gd{color:#27ae60}
+.amt{font-family:Consolas,"Courier New",monospace;font-weight:500}
+.ab{display:inline-block;height:4px;background:#e74c3c;border-radius:2px;vertical-align:middle;margin-left:2px}
+.gc{font-weight:600;font-size:12px}
+.ak{color:#27ae60}
+.an{font-weight:700;background:#fff3cd;border-radius:3px;padding:1px 3px}
+.at{color:#e74c3c;font-weight:700;background:#ffe0e0;border-radius:3px;padding:1px 3px}
+.ft{text-align:center;padding:20px;color:#aaa;font-size:11px}
+.nd{text-align:center;padding:40px;color:#999}
+.nodata{text-align:center;padding:60px 20px;color:#999;font-size:15px}
+.nodata .icon{font-size:40px;margin-bottom:10px}
+.sp{border:3px solid #f3f3f3;border-top:3px solid #3498db;border-radius:50%;width:30px;height:30px;animation:sp 1s linear infinite;margin:0 auto 10px}
+@keyframes sp{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+/* ── 移动端卡片布局 ── */
+.mc{display:none}
+.mc .ci{background:#fff;border-radius:10px;margin:6px 10px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden;border:1px solid #eee}
+.mc .ch{display:flex;align-items:center;padding:10px 12px;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.mc .ch:active{background:#f5f5f5}
+.mc .crk{min-width:28px;font-weight:700;font-size:14px;text-align:center}
+.mc .crk.t3{color:#e74c3c}
+.mc .crk.t10{color:#f39c12}
+.mc .cnm{flex:1;min-width:0}
+.mc .cnm .nm{font-weight:600;font-size:14px;color:#2c3e50;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc .cnm .cd2{font-size:11px;color:#999}
+.mc .camt{text-align:right;min-width:65px}
+.mc .camt .av2{font-size:13px;font-weight:600;font-family:Consolas,monospace}
+.mc .camt .al2{font-size:10px;color:#999}
+.mc .cdg{min-width:60px;text-align:right;font-weight:600;font-size:14px}
+.mc .cdg.up{color:#e74c3c}
+.mc .cdg.dn{color:#27ae60}
+.mc .chev{color:#ccc;font-size:12px;transition:transform .2s;margin-left:2px}
+.mc .ci.exp .chev{transform:rotate(90deg)}
+.mc .cd3{display:none;padding:0 12px 10px;border-top:1px solid #f0f0f0;background:#fafbfc}
+.mc .ci.exp .cd3{display:block}
+.mc .dr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:12px}
+.mc .dr:last-child{border-bottom:none}
+.mc .dr .dl{color:#888}
+.mc .dr .dv{font-weight:500}
+.mc .tag{display:inline-block;font-size:10px;padding:1px 5px;border-radius:3px;margin:1px}
+.mc .tag.ind{background:#e8f0fe;color:#1967d2}
+.mc .tag.abn{background:#fff3cd;color:#856404}
+.mc .tag.sev{background:#ffe0e0;color:#e74c3c}
+.mc .tags{padding:4px 0 2px}
+
+/* ── 移动端响应式 ── */
+@media(max-width:768px){
+  .hd{padding:10px 12px}
+  .hd h1{font-size:16px}
+  .hd .sub{gap:8px;margin-top:2px}
+  .hd .bdg{font-size:10px;padding:1px 8px}
+  .dn{gap:4px;margin-top:4px}
+  .dn label{font-size:11px}
+  .dn button{padding:2px 8px;font-size:11px}
+  .dn input[type="date"]{padding:2px 6px;font-size:11px;width:130px}
+  .dn .cd{font-size:11px;padding:1px 6px}
+  .dn .av{font-size:9px;width:100%;text-align:center;margin-top:2px}
+  .sb{padding:8px;gap:6px;display:grid;grid-template-columns:1fr 1fr}
+  .sc{min-width:auto;padding:6px 8px}
+  .sc .v{font-size:16px}
+  .sc .l{font-size:10px}
+  .ip{padding:6px;gap:4px;display:grid;grid-template-columns:1fr 1fr}
+  .ic{min-width:auto;max-width:none;padding:6px 8px}
+  .ic .v{font-size:15px}
+  .ic .n{font-size:10px}
+  .tc{margin:0 0 10px;border-radius:0}
+  .tb{padding:6px 8px;flex-wrap:wrap;gap:6px}
+  .tb .info{display:none}
+  .tb input{width:100%;font-size:13px;padding:8px 10px}
+  /* 隐藏PC表格，显示移动端卡片 */
+  .tc table{display:none}
+  .mc{display:block}
+  .ft{padding:12px 8px;font-size:10px}
+}
+</style>
+</head>
+<body>
+<div class="hd">
+<h1>A股市场 · 成交额 TOP100 股票</h1>
+<div class="sub">
+<span class="bdg" id="ut">加载中...</span>
+<span>共 <b id="tc">-</b> 只</span>
+</div>
+<div class="dn">
+<label for="dp">📅</label>
+<div class="nb">
+<button id="pb" onclick="pd()" title="上一交易日">◀</button>
+</div>
+<input type="date" id="dp" onchange="cd(this.value)">
+<div class="nb">
+<button id="nb2" onclick="nd2()" title="下一交易日">▶</button>
+</div>
+<span class="cd" id="cdsp">-</span>
+<span class="av" id="avl"></span>
+</div>
+</div>
+<div class="sb">
+<div class="sc r"><div class="v" id="rc">-</div><div class="l">🔴 红盘</div></div>
+<div class="sc g"><div class="v" id="gc">-</div><div class="l">🟢 绿盘</div></div>
+<div class="sc t"><div class="v" id="ta">-</div><div class="l">💰 TOP100总成交额(亿)</div></div>
+<div class="sc t"><div class="v" id="th">-</div><div class="l">📊 第100名门槛(亿)</div></div>
+</div>
+<div class="ip" id="ip"></div>
+<div class="tc">
+<div class="tb">
+<span class="info">点击表头排序 | 搜索过滤</span>
+<input type="text" id="si" placeholder="🔍 搜索股票/代码..." oninput="df()">
+</div>
+<table>
+<thead>
+<tr>
+<th width="36">#</th>
+<th width="80">名称</th>
+<th width="60">代码</th>
+<th width="105">行业/概念</th>
+<th width="68" class="st" onclick="ds('price')">收盘价</th>
+<th width="115" class="st" onclick="ds('amount')">成交额(亿) ▼</th>
+<th width="68" class="st" onclick="ds('daily_gain')">当日涨幅</th>
+<th width="62" class="st" onclick="ds('gain_3d')">3日涨幅</th>
+<th width="65" class="st" onclick="ds('gain_10d')">10日涨幅</th>
+<th width="65" class="st" onclick="ds('gain_30d')">30日涨幅</th>
+<th width="75" class="st" onclick="ds('dist_abnormal')">距异动</th>
+<th width="80" class="st" onclick="ds('dist_severe')">距严重异动</th>
+<th width="50">10日上榜</th>
+<th width="50">30日上榜</th>
+</tr>
+</thead>
+<tbody id="tb"><tr class="nd"><td colspan="14"><div class="sp"></div>加载中...</td></tr></tbody>
+</table>
+<!-- 移动端卡片容器 -->
+<div class="mc" id="mc"><div style="text-align:center;padding:40px 20px;color:#999"><div class="sp"></div>加载中...</div></div>
+</div>
+<div class="ft">
+<p>⚠️ 以上信息源自第三方数据整理，仅供参考，不构成投资建议。</p>
+<p>数据来源: 东方财富 · 通达信 · 腾讯财经 · 百度股市通 · 沪深交易所公开数据</p>
+<p>异动规则: 连续3日涨幅偏离值±20% | 严重异动: 科创/创业板10日±50%/30日±100%, 主板10日±100%/30日±200%</p>
+<p>生成时间: <span id="gt">2026-06-17 22:34:07</span></p>
+</div>
+<script>
+var H={"2026-06-16":{"stocks":[{"name":"兆易创新","code":"603986","industry":"半导体","amount":31598894526.0,"daily_gain":10.0,"gain_3d":21.72,"gain_10d":19.06,"gain_30d":70.22,"dist_abnormal":-1.72,"dist_severe":80.94,"board_10d":1,"board_30d":1,"price":532.76},{"name":"中际旭创","code":"300308","industry":"通信设备","amount":27272022889.13,"daily_gain":2.25,"gain_3d":11.06,"gain_10d":0.09,"gain_30d":49.08,"dist_abnormal":8.94,"dist_severe":49.91,"board_10d":1,"board_30d":1,"price":1248.09},{"name":"东山精密","code":"002384","industry":"元件","amount":25196207229.59,"daily_gain":3.16,"gain_3d":18.1,"gain_10d":14.7,"gain_30d":33.9,"dist_abnormal":1.9,"dist_severe":85.3,"board_10d":1,"board_30d":1,"price":249.06},{"name":"亨通光电","code":"600487","industry":"通信设备","amount":23269773515.0,"daily_gain":3.26,"gain_3d":14.43,"gain_10d":21.4,"gain_30d":54.6,"dist_abnormal":5.57,"dist_severe":78.6,"board_10d":1,"board_30d":1,"price":107.5},{"name":"新易盛","code":"300502","industry":"通信设备","amount":21349679550.09,"daily_gain":1.62,"gain_3d":10.15,"gain_10d":-28.68,"gain_30d":6.78,"dist_abnormal":9.85,"dist_severe":21.32,"board_10d":1,"board_30d":1,"price":549.0},{"name":"生益科技","code":"600183","industry":"元件","amount":21243646919.0,"daily_gain":0.42,"gain_3d":19.08,"gain_10d":27.68,"gain_30d":122.93,"dist_abnormal":0.92,"dist_severe":72.32,"board_10d":1,"board_30d":1,"price":179.4},{"name":"澜起科技","code":"688008","industry":"半导体","amount":18771027097.0,"daily_gain":7.51,"gain_3d":16.73,"gain_10d":3.39,"gain_30d":31.92,"dist_abnormal":3.27,"dist_severe":46.61,"board_10d":1,"board_30d":1,"price":244.17},{"name":"长电科技","code":"600584","industry":"半导体","amount":18015771097.0,"daily_gain":6.28,"gain_3d":18.63,"gain_10d":2.03,"gain_30d":69.63,"dist_abnormal":1.37,"dist_severe":97.97,"board_10d":1,"board_30d":1,"price":76.93},{"name":"佰维存储","code":"688525","industry":"半导体","amount":17682273514.0,"daily_gain":8.67,"gain_3d":12.84,"gain_10d":17.83,"gain_30d":18.93,"dist_abnormal":7.16,"dist_severe":32.17,"board_10d":1,"board_30d":1,"price":340.48},{"name":"寒武纪","code":"688256","industry":"半导体","amount":17255115422.0,"daily_gain":1.0,"gain_3d":6.45,"gain_10d":-4.22,"gain_30d":-27.67,"dist_abnormal":13.55,"dist_severe":45.78,"board_10d":1,"board_30d":1,"price":1306.99},{"name":"中天科技","code":"600522","industry":"通信设备","amount":16944144744.0,"daily_gain":1.4,"gain_3d":12.98,"gain_10d":22.08,"gain_30d":57.38,"dist_abnormal":7.02,"dist_severe":77.92,"board_10d":1,"board_30d":1,"price":54.15},{"name":"信维通信","code":"300136","industry":"消费电子","amount":16016435729.2,"daily_gain":5.39,"gain_3d":8.98,"gain_10d":10.42,"gain_30d":8.57,"dist_abnormal":11.02,"dist_severe":39.58,"board_10d":1,"board_30d":1,"price":100.16},{"name":"胜宏科技","code":"300476","industry":"元件","amount":16001187297.45,"daily_gain":1.75,"gain_3d":10.54,"gain_10d":2.34,"gain_30d":10.98,"dist_abnormal":9.46,"dist_severe":47.66,"board_10d":1,"board_30d":1,"price":355.48},{"name":"天孚通信","code":"300394","industry":"通信设备","amount":15113944017.57,"daily_gain":1.42,"gain_3d":17.22,"gain_10d":-33.79,"gain_30d":4.17,"dist_abnormal":2.78,"dist_severe":16.21,"board_10d":1,"board_30d":1,"price":324.71},{"name":"沪电股份","code":"002463","industry":"元件","amount":14460550533.78,"daily_gain":4.2,"gain_3d":17.05,"gain_10d":12.9,"gain_30d":39.85,"dist_abnormal":2.95,"dist_severe":87.1,"board_10d":1,"board_30d":1,"price":140.64},{"name":"江波龙","code":"301308","industry":"半导体","amount":14390572446.74,"daily_gain":5.82,"gain_3d":11.03,"gain_10d":7.36,"gain_30d":18.77,"dist_abnormal":8.97,"dist_severe":92.64,"board_10d":1,"board_30d":1,"price":540.23},{"name":"大族激光","code":"002008","industry":"自动化设备","amount":14259891349.56,"daily_gain":-0.57,"gain_3d":14.04,"gain_10d":4.01,"gain_30d":32.93,"dist_abnormal":5.96,"dist_severe":95.99,"board_10d":1,"board_30d":1,"price":136.62},{"name":"厦门钨业","code":"600549","industry":"小金属","amount":13306740892.0,"daily_gain":3.1,"gain_3d":24.75,"gain_10d":34.71,"gain_30d":35.39,"dist_abnormal":-4.75,"dist_severe":65.29,"board_10d":1,"board_30d":1,"price":78.41},{"name":"华工科技","code":"000988","industry":"自动化设备","amount":12974799618.82,"daily_gain":3.97,"gain_3d":12.91,"gain_10d":10.44,"gain_30d":36.2,"dist_abnormal":7.09,"dist_severe":89.56,"board_10d":1,"board_30d":1,"price":164.0},{"name":"海光信息","code":"688041","industry":"半导体","amount":12922811382.0,"daily_gain":4.73,"gain_3d":10.08,"gain_10d":7.79,"gain_30d":-10.51,"dist_abnormal":9.92,"dist_severe":42.21,"board_10d":1,"board_30d":1,"price":294.31},{"name":"国瓷材料","code":"300285","industry":"电子化学品Ⅱ","amount":12795434691.92,"daily_gain":16.42,"gain_3d":39.36,"gain_10d":29.82,"gain_30d":109.72,"dist_abnormal":-19.36,"dist_severe":20.18,"board_10d":1,"board_30d":1,"price":67.43},{"name":"中芯国际","code":"688981","industry":"半导体","amount":12699097858.0,"daily_gain":3.5,"gain_3d":7.86,"gain_10d":0.52,"gain_30d":9.42,"dist_abnormal":12.14,"dist_severe":49.48,"board_10d":1,"board_30d":1,"price":130.14},{"name":"三环集团","code":"300408","industry":"元件","amount":12455443360.18,"daily_gain":3.49,"gain_3d":22.89,"gain_10d":15.25,"gain_30d":82.89,"dist_abnormal":-2.89,"dist_severe":34.75,"board_10d":1,"board_30d":1,"price":150.22},{"name":"兴森科技","code":"002436","industry":"元件","amount":12237938183.14,"daily_gain":8.39,"gain_3d":26.46,"gain_10d":20.04,"gain_30d":62.2,"dist_abnormal":-6.46,"dist_severe":79.96,"board_10d":1,"board_30d":1,"price":44.1},{"name":"京东方Ａ","code":"000725","industry":"光学光电子","amount":12134264342.14,"daily_gain":10.0,"gain_3d":20.47,"gain_10d":20.04,"gain_30d":60.53,"dist_abnormal":-0.47,"dist_severe":79.96,"board_10d":1,"board_30d":1,"price":6.1},{"name":"光迅科技","code":"002281","industry":"通信设备","amount":11945945353.66,"daily_gain":5.21,"gain_3d":18.07,"gain_10d":8.04,"gain_30d":60.46,"dist_abnormal":1.93,"dist_severe":91.96,"board_10d":1,"board_30d":1,"price":230.01},{"name":"风华高科","code":"000636","industry":"元件","amount":11924155972.08,"daily_gain":4.89,"gain_3d":25.27,"gain_10d":22.33,"gain_30d":198.51,"dist_abnormal":-5.27,"dist_severe":77.67,"board_10d":1,"board_30d":1,"price":70.61},{"name":"工业富联","code":"601138","industry":"消费电子","amount":11897341771.0,"daily_gain":-0.36,"gain_3d":3.58,"gain_10d":-10.38,"gain_30d":15.16,"dist_abnormal":16.42,"dist_severe":89.62,"board_10d":1,"board_30d":1,"price":72.9},{"name":"通富微电","code":"002156","industry":"半导体","amount":11841057603.98,"daily_gain":6.82,"gain_3d":17.48,"gain_10d":-4.27,"gain_30d":18.03,"dist_abnormal":2.52,"dist_severe":95.73,"board_10d":1,"board_30d":1,"price":62.93},{"name":"烽火通信","code":"600498","industry":"通信设备","amount":11814718776.0,"daily_gain":3.62,"gain_3d":21.46,"gain_10d":47.4,"gain_30d":57.81,"dist_abnormal":-1.46,"dist_severe":52.6,"board_10d":1,"board_30d":1,"price":74.0},{"name":"德明利","code":"001309","industry":"半导体","amount":11617412998.16,"daily_gain":8.23,"gain_3d":14.93,"gain_10d":14.65,"gain_30d":22.92,"dist_abnormal":5.07,"dist_severe":85.35,"board_10d":1,"board_30d":1,"price":655.66},{"name":"香农芯创","code":"300475","industry":"其他电子Ⅱ","amount":11599691817.87,"daily_gain":20.0,"gain_3d":30.82,"gain_10d":38.56,"gain_30d":26.01,"dist_abnormal":-10.82,"dist_severe":11.44,"board_10d":1,"board_30d":1,"price":204.41},{"name":"XD永鼎股","code":"600105","industry":"通信设备","amount":11345113416.0,"daily_gain":7.15,"gain_3d":22.98,"gain_10d":21.51,"gain_30d":44.44,"dist_abnormal":-2.98,"dist_severe":78.49,"board_10d":1,"board_30d":1,"price":58.88},{"name":"麦格米特","code":"002851","industry":"其他电源设备Ⅱ","amount":10940333826.67,"daily_gain":9.33,"gain_3d":32.28,"gain_10d":13.24,"gain_30d":48.67,"dist_abnormal":-12.28,"dist_severe":86.76,"board_10d":1,"board_30d":1,"price":163.64},{"name":"TCL科技","code":"000100","industry":"光学光电子","amount":10656098123.69,"daily_gain":10.11,"gain_3d":12.53,"gain_10d":8.02,"gain_30d":19.35,"dist_abnormal":7.47,"dist_severe":91.98,"board_10d":1,"board_30d":1,"price":4.65},{"name":"中微公司","code":"688012","industry":"半导体","amount":10444151404.0,"daily_gain":10.03,"gain_3d":15.49,"gain_10d":22.76,"gain_30d":-8.43,"dist_abnormal":4.51,"dist_severe":27.24,"board_10d":1,"board_30d":1,"price":319.0},{"name":"立讯精密","code":"002475","industry":"消费电子","amount":10067605182.6,"daily_gain":0.09,"gain_3d":5.58,"gain_10d":-10.0,"gain_30d":0.36,"dist_abnormal":14.42,"dist_severe":90.0,"board_10d":1,"board_30d":1,"price":67.26},{"name":"宁德时代","code":"300750","industry":"电池","amount":9965557905.66,"daily_gain":-1.12,"gain_3d":1.05,"gain_10d":-6.43,"gain_30d":-13.26,"dist_abnormal":18.95,"dist_severe":43.57,"board_10d":1,"board_30d":1,"price":403.53},{"name":"蓝思科技","code":"300433","industry":"消费电子","amount":9939845758.32,"daily_gain":5.92,"gain_3d":24.48,"gain_10d":15.36,"gain_30d":92.37,"dist_abnormal":-4.48,"dist_severe":34.64,"board_10d":1,"board_30d":1,"price":48.35},{"name":"云南锗业","code":"002428","industry":"小金属","amount":9872188718.61,"daily_gain":-1.92,"gain_3d":7.59,"gain_10d":11.54,"gain_30d":28.89,"dist_abnormal":12.41,"dist_severe":88.46,"board_10d":1,"board_30d":1,"price":101.2},{"name":"国际复材","code":"301526","industry":"玻璃玻纤","amount":9783266981.1,"daily_gain":4.01,"gain_3d":41.46,"gain_10d":82.78,"gain_30d":112.07,"dist_abnormal":-21.46,"dist_severe":17.22,"board_10d":1,"board_30d":1,"price":38.68},{"name":"华天科技","code":"002185","industry":"半导体","amount":9683233890.16,"daily_gain":6.9,"gain_3d":18.62,"gain_10d":-0.57,"gain_30d":39.87,"dist_abnormal":1.38,"dist_severe":99.43,"board_10d":1,"board_30d":1,"price":17.82},{"name":"中钨高新","code":"000657","industry":"小金属","amount":9670875908.13,"daily_gain":-3.21,"gain_3d":13.33,"gain_10d":24.85,"gain_30d":44.43,"dist_abnormal":6.67,"dist_severe":75.15,"board_10d":1,"board_30d":1,"price":92.5},{"name":"铜冠铜箔","code":"301217","industry":"电池","amount":9466492782.13,"daily_gain":1.98,"gain_3d":28.13,"gain_10d":69.17,"gain_30d":105.18,"dist_abnormal":-8.13,"dist_severe":30.83,"board_10d":1,"board_30d":1,"price":178.17},{"name":"江丰电子","code":"300666","industry":"半导体","amount":9224904827.85,"daily_gain":0.65,"gain_3d":10.03,"gain_10d":44.99,"gain_30d":65.69,"dist_abnormal":9.97,"dist_severe":5.01,"board_10d":1,"board_30d":1,"price":299.61},{"name":"协创数据","code":"300857","industry":"消费电子","amount":9183938922.87,"daily_gain":12.42,"gain_3d":19.35,"gain_10d":11.25,"gain_30d":-5.12,"dist_abnormal":0.65,"dist_severe":38.75,"board_10d":1,"board_30d":1,"price":237.5},{"name":"亿纬锂能","code":"300014","industry":"电池","amount":9117769314.74,"daily_gain":0.99,"gain_3d":17.11,"gain_10d":7.24,"gain_30d":-10.59,"dist_abnormal":2.89,"dist_severe":42.76,"board_10d":1,"board_30d":1,"price":66.88},{"name":"阳光电源","code":"300274","industry":"光伏设备","amount":8995881851.44,"daily_gain":-2.19,"gain_3d":0.26,"gain_10d":-12.68,"gain_30d":6.13,"dist_abnormal":19.74,"dist_severe":37.32,"board_10d":1,"board_30d":1,"price":152.49},{"name":"大唐发电","code":"601991","industry":"电力","amount":8776953459.0,"daily_gain":4.94,"gain_3d":12.86,"gain_10d":0.33,"gain_30d":99.34,"dist_abnormal":7.14,"dist_severe":99.67,"board_10d":1,"board_30d":1,"price":8.7},{"name":"太辰光","code":"300570","industry":"通信设备","amount":8349172879.97,"daily_gain":1.03,"gain_3d":43.72,"gain_10d":57.58,"gain_30d":84.88,"dist_abnormal":-23.72,"dist_severe":-7.58,"board_10d":1,"board_30d":1,"price":263.29}],"indices":{"sh000001":{"latest_value":4108.08,"daily_gain":0.4,"month_gain":0.97,"week_gain":1.9},"sz399001":{"latest_value":15880.95,"daily_gain":1.31,"month_gain":1.96,"week_gain":6.13},"sz399006":{"latest_value":4167.05,"daily_gain":1.56,"month_gain":3.2,"week_gain":8.79},"sh000688":{"latest_value":1840.82,"daily_gain":4.69,"month_gain":5.11,"week_gain":10.68},"sz399005":{"latest_value":9491.03,"daily_gain":1.54,"month_gain":0.78,"week_gain":5.16},"sh000300":{"latest_value":4931.39,"daily_gain":0.97,"month_gain":0.8,"week_gain":3.23}},"meta":{"date":"2026-06-16","generate_time":"2026-06-16 18:00:00","total":50}},"2026-06-17":{"stocks":[{"name":"兆易创新","code":"603986","industry":"半导体","amount":31598894526.0,"daily_gain":10.0,"gain_3d":21.72,"gain_10d":19.06,"gain_30d":70.59,"dist_abnormal":-1.72,"dist_severe":80.94,"board_10d":1,"board_30d":1,"price":586.04},{"name":"中际旭创","code":"300308","industry":"通信设备","amount":27272022889.13,"daily_gain":2.25,"gain_3d":11.06,"gain_10d":0.09,"gain_30d":49.08,"dist_abnormal":8.94,"dist_severe":49.91,"board_10d":1,"board_30d":1,"price":1276.11},{"name":"东山精密","code":"002384","industry":"元件","amount":25196207229.59,"daily_gain":3.16,"gain_3d":18.1,"gain_10d":14.7,"gain_30d":33.9,"dist_abnormal":1.9,"dist_severe":85.3,"board_10d":1,"board_30d":1,"price":256.92},{"name":"亨通光电","code":"600487","industry":"通信设备","amount":23269773515.0,"daily_gain":3.26,"gain_3d":14.43,"gain_10d":21.4,"gain_30d":54.6,"dist_abnormal":5.57,"dist_severe":78.6,"board_10d":1,"board_30d":1,"price":111.0},{"name":"新易盛","code":"300502","industry":"通信设备","amount":21349679550.09,"daily_gain":1.62,"gain_3d":10.15,"gain_10d":-0.03,"gain_30d":49.77,"dist_abnormal":9.85,"dist_severe":49.97,"board_10d":1,"board_30d":1,"price":557.88},{"name":"生益科技","code":"600183","industry":"元件","amount":21243646919.0,"daily_gain":0.42,"gain_3d":19.08,"gain_10d":28.41,"gain_30d":125.16,"dist_abnormal":0.92,"dist_severe":71.59,"board_10d":1,"board_30d":1,"price":180.15},{"name":"澜起科技","code":"688008","industry":"半导体","amount":18771027097.0,"daily_gain":7.51,"gain_3d":16.73,"gain_10d":3.39,"gain_30d":31.92,"dist_abnormal":3.27,"dist_severe":46.61,"board_10d":1,"board_30d":1,"price":262.5},{"name":"长电科技","code":"600584","industry":"半导体","amount":18015771097.0,"daily_gain":6.28,"gain_3d":18.66,"gain_10d":2.04,"gain_30d":69.77,"dist_abnormal":1.34,"dist_severe":97.96,"board_10d":1,"board_30d":1,"price":81.76},{"name":"佰维存储","code":"688525","industry":"半导体","amount":17682273514.0,"daily_gain":8.67,"gain_3d":12.91,"gain_10d":17.91,"gain_30d":19.01,"dist_abnormal":7.09,"dist_severe":32.09,"board_10d":1,"board_30d":1,"price":370.0},{"name":"寒武纪","code":"688256","industry":"半导体","amount":17255115422.0,"daily_gain":1.0,"gain_3d":6.45,"gain_10d":-4.22,"gain_30d":7.86,"dist_abnormal":13.55,"dist_severe":45.78,"board_10d":1,"board_30d":1,"price":1320.0},{"name":"中天科技","code":"600522","industry":"通信设备","amount":16944144744.0,"daily_gain":1.4,"gain_3d":12.98,"gain_10d":22.08,"gain_30d":57.38,"dist_abnormal":7.02,"dist_severe":77.92,"board_10d":1,"board_30d":1,"price":54.91},{"name":"信维通信","code":"300136","industry":"消费电子","amount":16016435729.2,"daily_gain":5.39,"gain_3d":8.98,"gain_10d":10.42,"gain_30d":8.62,"dist_abnormal":11.02,"dist_severe":39.58,"board_10d":1,"board_30d":1,"price":105.56},{"name":"胜宏科技","code":"300476","industry":"元件","amount":16001187297.45,"daily_gain":1.75,"gain_3d":10.54,"gain_10d":2.34,"gain_30d":10.98,"dist_abnormal":9.46,"dist_severe":47.66,"board_10d":1,"board_30d":1,"price":361.7},{"name":"天孚通信","code":"300394","industry":"通信设备","amount":15113944017.57,"daily_gain":1.42,"gain_3d":17.22,"gain_10d":-7.17,"gain_30d":46.16,"dist_abnormal":2.78,"dist_severe":42.83,"board_10d":1,"board_30d":1,"price":329.33},{"name":"沪电股份","code":"002463","industry":"元件","amount":14460550533.78,"daily_gain":4.2,"gain_3d":17.05,"gain_10d":12.9,"gain_30d":40.52,"dist_abnormal":2.95,"dist_severe":87.1,"board_10d":1,"board_30d":1,"price":146.55},{"name":"江波龙","code":"301308","industry":"半导体","amount":14390572446.74,"daily_gain":5.82,"gain_3d":11.03,"gain_10d":7.36,"gain_30d":19.01,"dist_abnormal":8.97,"dist_severe":92.64,"board_10d":1,"board_30d":1,"price":571.68},{"name":"大族激光","code":"002008","industry":"自动化设备","amount":14259891349.56,"daily_gain":-0.57,"gain_3d":14.04,"gain_10d":4.01,"gain_30d":33.19,"dist_abnormal":5.96,"dist_severe":95.99,"board_10d":1,"board_30d":1,"price":135.84},{"name":"厦门钨业","code":"600549","industry":"小金属","amount":13306740892.0,"daily_gain":3.1,"gain_3d":24.75,"gain_10d":35.61,"gain_30d":36.3,"dist_abnormal":-4.75,"dist_severe":64.39,"board_10d":1,"board_30d":1,"price":80.84},{"name":"华工科技","code":"000988","industry":"自动化设备","amount":12974799618.82,"daily_gain":3.97,"gain_3d":12.91,"gain_10d":10.62,"gain_30d":36.47,"dist_abnormal":7.09,"dist_severe":89.38,"board_10d":1,"board_30d":1,"price":170.51},{"name":"海光信息","code":"688041","industry":"半导体","amount":12922811382.0,"daily_gain":4.73,"gain_3d":10.08,"gain_10d":7.8,"gain_30d":-10.51,"dist_abnormal":9.92,"dist_severe":42.2,"board_10d":1,"board_30d":1,"price":308.22},{"name":"国瓷材料","code":"300285","industry":"电子化学品Ⅱ","amount":12795434691.92,"daily_gain":16.42,"gain_3d":39.36,"gain_10d":29.82,"gain_30d":110.29,"dist_abnormal":-19.36,"dist_severe":20.18,"board_10d":1,"board_30d":1,"price":78.5},{"name":"中芯国际","code":"688981","industry":"半导体","amount":12699097858.0,"daily_gain":3.5,"gain_3d":7.86,"gain_10d":0.52,"gain_30d":9.42,"dist_abnormal":12.14,"dist_severe":49.48,"board_10d":1,"board_30d":1,"price":134.7},{"name":"三环集团","code":"300408","industry":"元件","amount":12455443360.18,"daily_gain":3.49,"gain_3d":22.89,"gain_10d":15.25,"gain_30d":83.87,"dist_abnormal":-2.89,"dist_severe":34.75,"board_10d":1,"board_30d":1,"price":155.46},{"name":"兴森科技","code":"002436","industry":"元件","amount":12237938183.14,"daily_gain":8.39,"gain_3d":26.46,"gain_10d":20.04,"gain_30d":62.36,"dist_abnormal":-6.46,"dist_severe":79.96,"board_10d":1,"board_30d":1,"price":47.8},{"name":"京东方Ａ","code":"000725","industry":"光学光电子","amount":12134264342.14,"daily_gain":10.0,"gain_3d":20.67,"gain_10d":20.24,"gain_30d":61.35,"dist_abnormal":-0.67,"dist_severe":79.76,"board_10d":1,"board_30d":1,"price":6.71},{"name":"光迅科技","code":"002281","industry":"通信设备","amount":11945945353.66,"daily_gain":5.21,"gain_3d":18.07,"gain_10d":8.04,"gain_30d":60.46,"dist_abnormal":1.93,"dist_severe":91.96,"board_10d":1,"board_30d":1,"price":242.0},{"name":"风华高科","code":"000636","industry":"元件","amount":11924155972.08,"daily_gain":4.89,"gain_3d":25.27,"gain_10d":22.33,"gain_30d":198.51,"dist_abnormal":-5.27,"dist_severe":77.67,"board_10d":1,"board_30d":1,"price":74.06},{"name":"工业富联","code":"601138","industry":"消费电子","amount":11897341771.0,"daily_gain":-0.36,"gain_3d":3.58,"gain_10d":-10.38,"gain_30d":15.16,"dist_abnormal":16.42,"dist_severe":89.62,"board_10d":1,"board_30d":1,"price":72.64},{"name":"通富微电","code":"002156","industry":"半导体","amount":11841057603.98,"daily_gain":6.82,"gain_3d":17.48,"gain_10d":-4.27,"gain_30d":18.2,"dist_abnormal":2.52,"dist_severe":95.73,"board_10d":1,"board_30d":1,"price":67.22},{"name":"烽火通信","code":"600498","industry":"通信设备","amount":11814718776.0,"daily_gain":3.62,"gain_3d":21.46,"gain_10d":47.4,"gain_30d":57.81,"dist_abnormal":-1.46,"dist_severe":52.6,"board_10d":1,"board_30d":1,"price":76.68},{"name":"德明利","code":"001309","industry":"半导体","amount":11617412998.16,"daily_gain":8.23,"gain_3d":14.93,"gain_10d":14.65,"gain_30d":22.92,"dist_abnormal":5.07,"dist_severe":85.35,"board_10d":1,"board_30d":1,"price":709.62},{"name":"香农芯创","code":"300475","industry":"其他电子Ⅱ","amount":11599691817.87,"daily_gain":20.0,"gain_3d":30.82,"gain_10d":38.56,"gain_30d":26.01,"dist_abnormal":-10.82,"dist_severe":11.44,"board_10d":1,"board_30d":1,"price":245.29},{"name":"XD永鼎股","code":"600105","industry":"通信设备","amount":11345113416.0,"daily_gain":7.15,"gain_3d":23.02,"gain_10d":21.55,"gain_30d":44.49,"dist_abnormal":-3.02,"dist_severe":78.45,"board_10d":1,"board_30d":1,"price":63.09},{"name":"麦格米特","code":"002851","industry":"其他电源设备Ⅱ","amount":10940333826.67,"daily_gain":9.33,"gain_3d":32.28,"gain_10d":13.24,"gain_30d":48.67,"dist_abnormal":-12.28,"dist_severe":86.76,"board_10d":1,"board_30d":1,"price":178.9},{"name":"TCL科技","code":"000100","industry":"光学光电子","amount":10656098123.69,"daily_gain":10.11,"gain_3d":12.53,"gain_10d":10.11,"gain_30d":21.9,"dist_abnormal":7.47,"dist_severe":89.89,"board_10d":1,"board_30d":1,"price":5.12},{"name":"中微公司","code":"688012","industry":"半导体","amount":10444151404.0,"daily_gain":10.03,"gain_3d":15.49,"gain_10d":22.76,"gain_30d":36.57,"dist_abnormal":4.51,"dist_severe":27.24,"board_10d":1,"board_30d":1,"price":351.0},{"name":"立讯精密","code":"002475","industry":"消费电子","amount":10067605182.6,"daily_gain":0.09,"gain_3d":5.58,"gain_10d":-10.0,"gain_30d":0.36,"dist_abnormal":14.42,"dist_severe":90.0,"board_10d":1,"board_30d":1,"price":67.32},{"name":"宁德时代","code":"300750","industry":"电池","amount":9965557905.66,"daily_gain":-1.12,"gain_3d":1.05,"gain_10d":-6.43,"gain_30d":-13.26,"dist_abnormal":18.95,"dist_severe":43.57,"board_10d":1,"board_30d":1,"price":399.0},{"name":"蓝思科技","code":"300433","industry":"消费电子","amount":9939845758.32,"daily_gain":5.92,"gain_3d":24.48,"gain_10d":15.36,"gain_30d":92.37,"dist_abnormal":-4.48,"dist_severe":34.64,"board_10d":1,"board_30d":1,"price":51.21},{"name":"云南锗业","code":"002428","industry":"小金属","amount":9872188718.61,"daily_gain":-1.92,"gain_3d":7.59,"gain_10d":11.54,"gain_30d":28.89,"dist_abnormal":12.41,"dist_severe":88.46,"board_10d":1,"board_30d":1,"price":99.26},{"name":"国际复材","code":"301526","industry":"玻璃玻纤","amount":9783266981.1,"daily_gain":4.01,"gain_3d":41.46,"gain_10d":82.78,"gain_30d":112.07,"dist_abnormal":-21.46,"dist_severe":17.22,"board_10d":1,"board_30d":1,"price":40.23},{"name":"华天科技","code":"002185","industry":"半导体","amount":9683233890.16,"daily_gain":6.9,"gain_3d":18.62,"gain_10d":-0.46,"gain_30d":40.09,"dist_abnormal":1.38,"dist_severe":99.54,"board_10d":1,"board_30d":1,"price":19.05},{"name":"中钨高新","code":"000657","industry":"小金属","amount":9670875908.13,"daily_gain":-3.21,"gain_3d":13.33,"gain_10d":24.85,"gain_30d":44.43,"dist_abnormal":6.67,"dist_severe":75.15,"board_10d":1,"board_30d":1,"price":89.53},{"name":"铜冠铜箔","code":"301217","industry":"电池","amount":9466492782.13,"daily_gain":1.98,"gain_3d":28.13,"gain_10d":69.17,"gain_30d":105.18,"dist_abnormal":-8.13,"dist_severe":30.83,"board_10d":1,"board_30d":1,"price":181.69},{"name":"江丰电子","code":"300666","industry":"半导体","amount":9224904827.85,"daily_gain":0.65,"gain_3d":10.03,"gain_10d":44.99,"gain_30d":66.04,"dist_abnormal":9.97,"dist_severe":5.01,"board_10d":1,"board_30d":1,"price":301.57},{"name":"协创数据","code":"300857","industry":"消费电子","amount":9183938922.87,"daily_gain":12.42,"gain_3d":19.35,"gain_10d":11.25,"gain_30d":-5.12,"dist_abnormal":0.65,"dist_severe":38.75,"board_10d":1,"board_30d":1,"price":266.99},{"name":"亿纬锂能","code":"300014","industry":"电池","amount":9117769314.74,"daily_gain":0.99,"gain_3d":17.11,"gain_10d":7.24,"gain_30d":-10.31,"dist_abnormal":2.89,"dist_severe":42.76,"board_10d":1,"board_30d":1,"price":67.54},{"name":"阳光电源","code":"300274","industry":"光伏设备","amount":8995881851.44,"daily_gain":-2.19,"gain_3d":0.26,"gain_10d":-12.68,"gain_30d":6.66,"dist_abnormal":19.74,"dist_severe":37.32,"board_10d":1,"board_30d":1,"price":149.15},{"name":"大唐发电","code":"601991","industry":"电力","amount":8776953459.0,"daily_gain":4.94,"gain_3d":12.86,"gain_10d":0.33,"gain_30d":99.34,"dist_abnormal":7.14,"dist_severe":99.67,"board_10d":1,"board_30d":1,"price":9.13},{"name":"太辰光","code":"300570","industry":"通信设备","amount":8349172879.97,"daily_gain":1.03,"gain_3d":43.72,"gain_10d":57.58,"gain_30d":84.88,"dist_abnormal":-23.72,"dist_severe":-7.58,"board_10d":1,"board_30d":1,"price":265.99},{"name":"沪硅产业","code":"688126","industry":"半导体","amount":8202349921.0,"daily_gain":4.35,"gain_3d":9.5,"gain_10d":28.16,"gain_30d":45.1,"dist_abnormal":10.5,"dist_severe":21.84,"board_10d":1,"board_30d":1,"price":32.4},{"name":"东材科技","code":"601208","industry":"塑料","amount":8187232624.0,"daily_gain":2.04,"gain_3d":19.88,"gain_10d":29.58,"gain_30d":78.32,"dist_abnormal":0.12,"dist_severe":70.42,"board_10d":1,"board_30d":1,"price":73.2},{"name":"拓荆科技","code":"688072","industry":"半导体","amount":8178007543.0,"daily_gain":12.84,"gain_3d":14.7,"gain_10d":20.29,"gain_30d":59.54,"dist_abnormal":5.3,"dist_severe":29.71,"board_10d":1,"board_30d":1,"price":740.0},{"name":"士兰微","code":"600460","industry":"半导体","amount":8105496511.0,"daily_gain":6.66,"gain_3d":27.0,"gain_10d":17.67,"gain_30d":37.66,"dist_abnormal":-7.0,"dist_severe":82.33,"board_10d":1,"board_30d":1,"price":40.83},{"name":"长川科技","code":"300604","industry":"半导体","amount":7877377085.15,"daily_gain":9.82,"gain_3d":18.33,"gain_10d":23.28,"gain_30d":49.92,"dist_abnormal":1.67,"dist_severe":26.72,"board_10d":1,"board_30d":1,"price":264.01},{"name":"德福科技","code":"301511","industry":"电池","amount":7857705106.11,"daily_gain":-4.03,"gain_3d":17.75,"gain_10d":30.73,"gain_30d":80.61,"dist_abnormal":2.25,"dist_severe":69.27,"board_10d":1,"board_30d":1,"price":162.8},{"name":"北京君正","code":"300223","industry":"半导体","amount":7760233037.33,"daily_gain":5.97,"gain_3d":17.93,"gain_10d":18.94,"gain_30d":25.75,"dist_abnormal":2.07,"dist_severe":31.06,"board_10d":1,"board_30d":1,"price":171.7},{"name":"北方华创","code":"002371","industry":"半导体","amount":7737166593.57,"daily_gain":4.77,"gain_3d":5.55,"gain_10d":14.54,"gain_30d":29.13,"dist_abnormal":14.45,"dist_severe":85.46,"board_10d":1,"board_30d":1,"price":704.22},{"name":"盛和资源","code":"600392","industry":"小金属","amount":7527702812.0,"daily_gain":-0.86,"gain_3d":11.55,"gain_10d":25.9,"gain_30d":7.87,"dist_abnormal":8.45,"dist_severe":74.1,"board_10d":1,"board_30d":1,"price":28.78},{"name":"菲利华","code":"300395","industry":"航空装备Ⅱ","amount":7478391179.29,"daily_gain":2.61,"gain_3d":13.35,"gain_10d":13.35,"gain_30d":16.32,"dist_abnormal":6.65,"dist_severe":36.65,"board_10d":1,"board_30d":1,"price":134.88},{"name":"鹏鼎控股","code":"002938","industry":"元件","amount":7448793106.23,"daily_gain":10.0,"gain_3d":17.23,"gain_10d":10.91,"gain_30d":60.54,"dist_abnormal":2.77,"dist_severe":89.09,"board_10d":1,"board_30d":1,"price":119.01},{"name":"洛阳钼业","code":"603993","industry":"工业金属","amount":7053252466.0,"daily_gain":0.7,"gain_3d":5.55,"gain_10d":1.41,"gain_30d":5.08,"dist_abnormal":14.45,"dist_severe":98.59,"board_10d":1,"board_30d":1,"price":20.17},{"name":"中国巨石","code":"600176","industry":"玻璃玻纤","amount":7036662812.0,"daily_gain":9.99,"gain_3d":31.22,"gain_10d":44.03,"gain_30d":48.33,"dist_abnormal":-11.22,"dist_severe":55.97,"board_10d":1,"board_30d":1,"price":54.6},{"name":"华虹宏力","code":"688347","industry":"半导体","amount":6999109433.0,"daily_gain":9.31,"gain_3d":19.38,"gain_10d":11.77,"gain_30d":71.51,"dist_abnormal":0.62,"dist_severe":38.23,"board_10d":1,"board_30d":1,"price":260.7},{"name":"源杰科技","code":"688498","industry":"半导体","amount":6985047597.0,"daily_gain":0.19,"gain_3d":15.14,"gain_10d":14.73,"gain_30d":52.74,"dist_abnormal":4.86,"dist_severe":35.27,"board_10d":1,"board_30d":1,"price":1612.0},{"name":"昊华科技","code":"600378","industry":"化学制品","amount":6959652993.0,"daily_gain":10.0,"gain_3d":11.64,"gain_10d":54.64,"gain_30d":76.2,"dist_abnormal":8.36,"dist_severe":45.36,"board_10d":1,"board_30d":1,"price":63.8},{"name":"深科技","code":"000021","industry":"消费电子","amount":6952080328.11,"daily_gain":5.25,"gain_3d":15.69,"gain_10d":12.68,"gain_30d":40.69,"dist_abnormal":4.31,"dist_severe":87.32,"board_10d":1,"board_30d":1,"price":42.91},{"name":"紫金矿业","code":"601899","industry":"工业金属","amount":6805840566.0,"daily_gain":0.46,"gain_3d":4.61,"gain_10d":-2.69,"gain_30d":-11.05,"dist_abnormal":15.39,"dist_severe":97.31,"board_10d":1,"board_30d":1,"price":30.43},{"name":"中材科技","code":"002080","industry":"玻璃玻纤","amount":6698619785.08,"daily_gain":10.0,"gain_3d":33.09,"gain_10d":29.53,"gain_30d":36.77,"dist_abnormal":-13.09,"dist_severe":70.47,"board_10d":1,"board_30d":1,"price":82.41},{"name":"立昂微","code":"605358","industry":"半导体","amount":6677436315.0,"daily_gain":4.11,"gain_3d":7.34,"gain_10d":22.14,"gain_30d":63.78,"dist_abnormal":12.66,"dist_severe":77.86,"board_10d":1,"board_30d":1,"price":70.95},{"name":"多氟多","code":"002407","industry":"化学制品","amount":6660444582.43,"daily_gain":-2.19,"gain_3d":-3.02,"gain_10d":15.63,"gain_30d":1.45,"dist_abnormal":16.98,"dist_severe":84.37,"board_10d":1,"board_30d":1,"price":38.47},{"name":"有研新材","code":"600206","industry":"半导体","amount":6646653382.0,"daily_gain":1.74,"gain_3d":20.61,"gain_10d":36.9,"gain_30d":42.19,"dist_abnormal":-0.61,"dist_severe":63.1,"board_10d":1,"board_30d":1,"price":39.79},{"name":"生益电子","code":"688183","industry":"元件","amount":6560939176.0,"daily_gain":1.52,"gain_3d":14.09,"gain_10d":10.39,"gain_30d":32.03,"dist_abnormal":5.91,"dist_severe":39.61,"board_10d":1,"board_30d":1,"price":141.07},{"name":"北方稀土","code":"600111","industry":"小金属","amount":6520927839.0,"daily_gain":-3.19,"gain_3d":1.8,"gain_10d":1.27,"gain_30d":-9.15,"dist_abnormal":18.2,"dist_severe":98.73,"board_10d":1,"board_30d":1,"price":50.32},{"name":"长芯博创","code":"300548","industry":"通信设备","amount":6308817979.28,"daily_gain":-4.74,"gain_3d":20.47,"gain_10d":10.2,"gain_30d":6.89,"dist_abnormal":-0.47,"dist_severe":39.8,"board_10d":1,"board_30d":1,"price":269.88},{"name":"太极实业","code":"600667","industry":"工程咨询服务Ⅱ","amount":6283642956.0,"daily_gain":5.73,"gain_3d":15.83,"gain_10d":27.91,"gain_30d":87.2,"dist_abnormal":4.17,"dist_severe":72.09,"board_10d":1,"board_30d":1,"price":19.02},{"name":"江海股份","code":"002484","industry":"元件","amount":6259376657.04,"daily_gain":9.99,"gain_3d":29.14,"gain_10d":19.8,"gain_30d":161.21,"dist_abnormal":-9.14,"dist_severe":80.2,"board_10d":1,"board_30d":1,"price":104.93},{"name":"光库科技","code":"300620","industry":"通信设备","amount":6222320478.33,"daily_gain":0.69,"gain_3d":38.24,"gain_10d":17.25,"gain_30d":59.9,"dist_abnormal":-18.24,"dist_severe":32.75,"board_10d":1,"board_30d":1,"price":395.2},{"name":"长飞光纤","code":"601869","industry":"通信设备","amount":6095028482.0,"daily_gain":-0.78,"gain_3d":5.5,"gain_10d":3.49,"gain_30d":27.54,"dist_abnormal":14.5,"dist_severe":96.51,"board_10d":1,"board_30d":1,"price":460.5},{"name":"XD中船特","code":"688146","industry":"半导体","amount":6091782381.0,"daily_gain":5.17,"gain_3d":12.56,"gain_10d":86.17,"gain_30d":340.86,"dist_abnormal":7.44,"dist_severe":-36.17,"board_10d":1,"board_30d":1,"price":339.7},{"name":"三安光电","code":"600703","industry":"光学光电子","amount":6027254927.0,"daily_gain":1.9,"gain_3d":23.28,"gain_10d":10.64,"gain_30d":16.89,"dist_abnormal":-3.28,"dist_severe":89.36,"board_10d":1,"board_30d":1,"price":17.16},{"name":"天赐材料","code":"002709","industry":"电池","amount":6019294291.51,"daily_gain":1.09,"gain_3d":6.47,"gain_10d":3.02,"gain_30d":-17.42,"dist_abnormal":13.53,"dist_severe":96.98,"board_10d":1,"board_30d":1,"price":52.85},{"name":"鼎龙股份","code":"300054","industry":"电子化学品Ⅱ","amount":5976785446.04,"daily_gain":7.85,"gain_3d":15.52,"gain_10d":29.63,"gain_30d":41.11,"dist_abnormal":4.48,"dist_severe":20.37,"board_10d":1,"board_30d":1,"price":91.13},{"name":"宏和科技","code":"603256","industry":"玻璃玻纤","amount":5931313676.0,"daily_gain":2.92,"gain_3d":24.54,"gain_10d":31.22,"gain_30d":97.72,"dist_abnormal":-4.54,"dist_severe":68.78,"board_10d":1,"board_30d":1,"price":258.9},{"name":"圣泉集团","code":"605589","industry":"塑料","amount":5923772707.0,"daily_gain":-0.98,"gain_3d":13.85,"gain_10d":22.96,"gain_30d":65.42,"dist_abnormal":6.15,"dist_severe":77.04,"board_10d":1,"board_30d":1,"price":66.4},{"name":"中兴通讯","code":"000063","industry":"通信设备","amount":5690613089.72,"daily_gain":-0.95,"gain_3d":3.55,"gain_10d":3.29,"gain_30d":-1.59,"dist_abnormal":16.45,"dist_severe":96.71,"board_10d":1,"board_30d":1,"price":37.64},{"name":"普冉股份","code":"688766","industry":"半导体","amount":5586810806.0,"daily_gain":20.0,"gain_3d":48.54,"gain_10d":55.13,"gain_30d":82.22,"dist_abnormal":-28.54,"dist_severe":-5.13,"board_10d":1,"board_30d":1,"price":580.2},{"name":"贵州茅台","code":"600519","industry":"白酒Ⅱ","amount":5581256291.0,"daily_gain":-1.25,"gain_3d":-4.02,"gain_10d":-3.27,"gain_30d":-9.82,"dist_abnormal":15.98,"dist_severe":96.73,"board_10d":1,"board_30d":1,"price":1240.0},{"name":"中国西电","code":"601179","industry":"电网设备","amount":5528055719.0,"daily_gain":-3.13,"gain_3d":17.29,"gain_10d":-3.85,"gain_30d":-9.44,"dist_abnormal":2.71,"dist_severe":96.15,"board_10d":1,"board_30d":1,"price":15.79},{"name":"方正科技","code":"600601","industry":"元件","amount":5514501128.0,"daily_gain":1.77,"gain_3d":11.33,"gain_10d":16.1,"gain_30d":20.99,"dist_abnormal":8.67,"dist_severe":83.9,"board_10d":1,"board_30d":1,"price":14.35},{"name":"中化国际","code":"600500","industry":"化学制品","amount":5478953506.0,"daily_gain":1.55,"gain_3d":16.02,"gain_10d":54.1,"gain_30d":92.47,"dist_abnormal":3.98,"dist_severe":45.9,"board_10d":1,"board_30d":1,"price":9.2},{"name":"仕佳光子","code":"688313","industry":"通信设备","amount":5422600129.0,"daily_gain":-1.96,"gain_3d":13.72,"gain_10d":0.57,"gain_30d":12.32,"dist_abnormal":6.28,"dist_severe":49.43,"board_10d":1,"board_30d":1,"price":169.52},{"name":"雅克科技","code":"002409","industry":"半导体","amount":5422421737.95,"daily_gain":7.38,"gain_3d":11.23,"gain_10d":29.98,"gain_30d":64.54,"dist_abnormal":8.77,"dist_severe":70.02,"board_10d":1,"board_30d":1,"price":147.92},{"name":"巨化股份","code":"600160","industry":"化学制品","amount":5387546014.0,"daily_gain":2.14,"gain_3d":12.53,"gain_10d":24.19,"gain_30d":30.11,"dist_abnormal":7.47,"dist_severe":75.81,"board_10d":1,"board_30d":1,"price":47.7},{"name":"金钼股份","code":"601958","industry":"小金属","amount":5385173542.0,"daily_gain":-1.42,"gain_3d":11.56,"gain_10d":18.82,"gain_30d":38.41,"dist_abnormal":8.44,"dist_severe":81.18,"board_10d":1,"board_30d":1,"price":28.47},{"name":"利通电子","code":"603629","industry":"消费电子","amount":5376466328.0,"daily_gain":1.18,"gain_3d":8.47,"gain_10d":-20.61,"gain_30d":3.89,"dist_abnormal":11.53,"dist_severe":79.39,"board_10d":1,"board_30d":1,"price":165.03},{"name":"芯原股份","code":"688521","industry":"半导体","amount":5354830904.0,"daily_gain":3.36,"gain_3d":15.39,"gain_10d":7.07,"gain_30d":-7.59,"dist_abnormal":4.61,"dist_severe":42.93,"board_10d":1,"board_30d":1,"price":257.46},{"name":"盛合晶微","code":"688820","industry":"半导体","amount":5352667629.0,"daily_gain":5.79,"gain_3d":16.44,"gain_10d":-2.67,"gain_30d":69.81,"dist_abnormal":3.56,"dist_severe":47.33,"board_10d":1,"board_30d":1,"price":181.87},{"name":"天华新能","code":"300390","industry":"电池","amount":5343970230.0,"daily_gain":-1.79,"gain_3d":-4.53,"gain_10d":12.74,"gain_30d":-20.01,"dist_abnormal":15.47,"dist_severe":37.26,"board_10d":1,"board_30d":1,"price":91.75},{"name":"东方财富","code":"300059","industry":"证券Ⅱ","amount":5225743454.71,"daily_gain":-0.42,"gain_3d":5.78,"gain_10d":0.69,"gain_30d":-8.68,"dist_abnormal":14.22,"dist_severe":49.31,"board_10d":1,"board_30d":1,"price":19.04}],"indices":{"sh000001":{"latest_value":4108.08,"daily_gain":0.4,"month_gain":0.97,"week_gain":1.9},"sz399001":{"latest_value":15880.95,"daily_gain":1.31,"month_gain":1.96,"week_gain":6.13},"sz399006":{"latest_value":4167.05,"daily_gain":1.56,"month_gain":3.2,"week_gain":8.79},"sh000688":{"latest_value":1840.82,"daily_gain":4.69,"month_gain":5.11,"week_gain":10.68},"sz399005":{"latest_value":9491.03,"daily_gain":1.54,"month_gain":0.78,"week_gain":5.16},"sh000300":{"latest_value":4931.39,"daily_gain":0.97,"month_gain":0.8,"week_gain":3.23}},"meta":{"date":"2026-06-17","generate_time":"2026-06-17 18:52:12","total":100}}};
+var DK=Object.keys(H).sort();/* 所有可用日期, 升序 */
+var LD="2026-06-17";/* 最新日期 */
+var CD=LD;/* 当前显示日期 */
+var sf="amount",sa=false;
+var ix={sh000001:{n:"上证指数"},sz399001:{n:"深证成指"},sz399006:{n:"创业板指"},sh000688:{n:"科创50"},sz399005:{n:"中小100"},sh000300:{n:"沪深300"}};
+
+/* ── 工具函数 ── */
+function fp(v){if(v==null)return"-";var s=v>0?"+":"";return s+v.toFixed(2)+"%"}
+function fg(v){if(v==null)return'<span class="gc">-</span>';var c=v>0?"gu":(v<0?"gd":""),s=v>0?"+":"";return'<span class="gc '+c+'">'+s+v.toFixed(2)+"%</span>"}
+function fn(v){if(v==null)return"-";if(v<0)return'<span class="at">触发!</span>';if(v<8)return'<span class="an">距 '+v.toFixed(1)+"%</span>";return'<span class="ak">'+v.toFixed(1)+"%</span>"}
+function fb(y,my){var yi=y/1e8,p=my>0?(yi/my*100):0;return yi.toFixed(2)+'<span class="ab" style="width:'+Math.max(p,1)+'px"></span>'}
+function es(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+
+/* ── 日期导航 ── */
+function cd(d){/* 选择日期 */
+  if(!H[d]){document.getElementById("tb").innerHTML='<tr><td colspan="14" class="nodata"><div class="icon">📭</div>'+d+' 无数据</td></tr>';document.getElementById("mc").innerHTML='<div class="nodata"><div class="icon">📭</div>'+d+' 无数据</div>';return}
+  CD=d;ld();/* 加载数据 */
+}
+function pd(){/* 上一交易日 */
+  var i=DK.indexOf(CD);if(i>0){CD=DK[i-1];ld()}
+}
+function nd2(){/* 下一交易日 */
+  var i=DK.indexOf(CD);if(i<DK.length-1){CD=DK[i+1];ld()}
+}
+function ld(){/* 加载当前日期数据 */
+  var day=H[CD];if(!day)return;
+  var D=day.stocks||[],I=day.indices||{},M=day.meta||{};
+  /* 更新日期选择器 */
+  document.getElementById("dp").value=CD;
+  document.getElementById("cdsp").textContent=CD;
+  document.getElementById("ut").textContent=CD;
+  document.getElementById("tc").textContent=D.length;
+  document.getElementById("gt").textContent=M.generate_time||"";
+  /* 上一日/下一日按钮状态 */
+  var ci=DK.indexOf(CD);
+  document.getElementById("pb").disabled=(ci<=0);
+  document.getElementById("nb2").disabled=(ci>=DK.length-1);
+  /* 可用日期范围提示 */
+  document.getElementById("avl").textContent="可用数据: "+DK[0]+" ~ "+DK[DK.length-1]+" ("+DK.length+"天)";
+  document.getElementById("dp").min=DK[0];
+  document.getElementById("dp").max=DK[DK.length-1];
+  /* 渲染 */
+  rs(D);ri(I);rt(D);
+}
+
+/* ── 统计栏 ── */
+function rs(D){var r=0,g=0,t=0;D.forEach(function(s){if(s.daily_gain>0)r++;else if(s.daily_gain<0)g++;t+=s.amount||0});document.getElementById("rc").textContent=r;document.getElementById("gc").textContent=g;document.getElementById("ta").textContent=(t/1e8).toFixed(0);var th=D.length>0?(D[D.length-1].amount||0)/1e8:0;document.getElementById("th").textContent=th.toFixed(2)}
+
+/* ── 指数面板 ── */
+function ri(I){var h="";for(var s in ix){var x=I[s];if(!x)continue;var mg=x.month_gain||0,wg=x.week_gain||0;var mc=mg>5?"up":(mg<-5?"dn":"sh"),wc=wg>5?"up":(wg<-5?"dn":"sh");var ms=mg>5?"📈":(mg<-5?"📉":"📊"),ws=wg>5?"📈":(wg<-5?"📉":"📊");h+='<div class="ic"><div class="n">'+ix[s].n+'</div>';h+='<div class="v">'+(x.latest_value||0).toFixed(2)+'</div>';h+='<div class="chg '+(x.daily_gain>0?"c-up":x.daily_gain<0?"c-dn":"")+'">'+fp(x.daily_gain)+'</div>';h+='<div class="rw '+mc+'"><span>月涨幅 '+ms+'</span><span>'+fp(mg)+'</span></div>';h+='<div class="rw '+wc+'"><span>周涨幅 '+ws+'</span><span>'+fp(wg)+'</span></div>';h+='</div>'}document.getElementById("ip").innerHTML=h}
+
+/* ── PC表格渲染 ── */
+function rt(a){var tb=document.getElementById("tb");var mc=document.getElementById("mc");if(!a||!a.length){tb.innerHTML='<tr><td colspan="14" class="nd">暂无数据</td></tr>';mc.innerHTML='<div class="nodata"><div class="icon">📭</div>暂无数据</div>';return}var my=Math.max.apply(null,a.map(function(s){return s.amount||0}));/* PC表格 */var h="";a.forEach(function(s,i){var rk=i+1,rc=rk<=3?"t3":(rk<=10?"t10":""),gc=s.daily_gain>0?"gu":(s.daily_gain<0?"gd":"");h+='<tr>';h+='<td class="rk '+rc+'">'+rk+'</td>';h+='<td><span class="sn">'+es(s.name)+'</span></td>';h+='<td><span class="scd">'+es(s.code)+'</span></td>';h+='<td><span class="itg">'+es(s.industry||"-")+'</span></td>';h+='<td class="amt">'+(s.price?(s.price<1?s.price.toFixed(3):s.price.toFixed(2)):"-")+'</td>';h+='<td class="amt">'+fb(s.amount||0,my)+'</td>';h+='<td class="'+gc+'">'+fg(s.daily_gain)+'</td>';h+='<td>'+fg(s.gain_3d)+'</td>';h+='<td>'+fg(s.gain_10d)+'</td>';h+='<td>'+fg(s.gain_30d)+'</td>';h+='<td>'+fn(s.dist_abnormal)+'</td>';h+='<td>'+fn(s.dist_severe)+'</td>';h+='<td>'+(s.board_10d||0)+'</td>';h+='<td>'+(s.board_30d||0)+'</td>';h+='</tr>'});tb.innerHTML=h;/* 移动端卡片 */var mh="";a.forEach(function(s,i){var rk=i+1,rc=rk<=3?"t3":(rk<=10?"t10":"");var dg=s.daily_gain||0;var dc=dg>0?"up":(dg<0?"dn":"");var ds2=dg>0?"+":"";var amtYi=((s.amount||0)/1e8).toFixed(2);mh+='<div class="ci" onclick="tg(this)">';mh+='<div class="ch">';mh+='<div class="crk '+rc+'">'+rk+'</div>';mh+='<div class="cnm"><div class="nm">'+es(s.name)+'</div><div class="cd2">'+es(s.code)+'</div></div>';mh+='<div class="cdg '+dc+'">'+ds2+dg.toFixed(2)+'%</div>';mh+='<div class="camt"><div class="av2">'+amtYi+'亿</div><div class="al2">成交额</div></div>';mh+='<div class="chev">▶</div>';mh+='</div>';/* 展开详情 */mh+='<div class="cd3">';mh+='<div class="dr"><span class="dl">行业/概念</span><span class="dv"><span class="tag ind">'+es(s.industry||"-")+'</span></span></div>';mh+='<div class="dr"><span class="dl">收盘价</span><span class="dv">'+(s.price?(s.price<1?s.price.toFixed(3):s.price.toFixed(2)):"-")+'</span></div>';mh+='<div class="dr"><span class="dl">成交额</span><span class="dv amt">'+amtYi+' 亿</span></div>';mh+='<div class="dr"><span class="dl">3日涨幅</span><span class="dv '+(s.gain_3d>0?"gu":s.gain_3d<0?"gd":"")+'">'+fp(s.gain_3d)+'</span></div>';mh+='<div class="dr"><span class="dl">10日涨幅</span><span class="dv '+(s.gain_10d>0?"gu":s.gain_10d<0?"gd":"")+'">'+fp(s.gain_10d)+'</span></div>';mh+='<div class="dr"><span class="dl">30日涨幅</span><span class="dv '+(s.gain_30d>0?"gu":s.gain_30d<0?"gd":"")+'">'+fp(s.gain_30d)+'</span></div>';var da=s.dist_abnormal,dse=s.dist_severe;var abnTag=da!=null&&da<0?'<span class="tag sev">触发</span>':da!=null&&da<8?'<span class="tag abn">距'+da.toFixed(1)+'%</span>':'';var sevTag=dse!=null&&dse<0?'<span class="tag sev">触发</span>':dse!=null&&dse<8?'<span class="tag abn">距'+dse.toFixed(1)+'%</span>':'';mh+='<div class="dr"><span class="dl">距异动</span><span class="dv tags">'+fn(da)+' '+abnTag+'</span></div>';mh+='<div class="dr"><span class="dl">距严重异动</span><span class="dv tags">'+fn(dse)+' '+sevTag+'</span></div>';mh+='<div class="dr"><span class="dl">上榜次数</span><span class="dv">10日 '+(s.board_10d||0)+'次 / 30日 '+(s.board_30d||0)+'次</span></div>';mh+='</div></div>'});mc.innerHTML=mh}
+
+/* ── 卡片展开/折叠 ── */
+function tg(el){el.classList.toggle("exp")}
+
+/* ── 排序 ── */
+function ds(f){if(sf===f)sa=!sa;else{sf=f;sa=false}var day=H[CD];if(!day)return;var a=(day.stocks||[]).slice();a.sort(function(x,y){var vx=x[f]||0,vy=y[f]||0;return sa?(vx-vy):(vy-vx)});document.querySelectorAll("th.sd,th.sd.asc").forEach(function(x){x.className=x.className.replace(/\s*sd|\s*asc/g,"").trim()});var th=document.querySelector("th[onclick*='"+f+"']");if(th){th.classList.add("sd");if(sa)th.classList.add("asc")}rt(a)}
+
+/* ── 搜索过滤 ── */
+function df(){var q=document.getElementById("si").value.toLowerCase().trim();var day=H[CD];if(!day)return;var D=day.stocks||[];if(!q){rt(D);return}var f=D.filter(function(s){return(s.name||"").toLowerCase().indexOf(q)>=0||(s.code||"").indexOf(q)>=0||(s.industry||"").toLowerCase().indexOf(q)>=0});rt(f)}
+
+/* ── 初始化 ── */
+document.addEventListener("DOMContentLoaded",function(){ld()});
+</script>
+</body>
+</html>
