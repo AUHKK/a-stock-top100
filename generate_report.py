@@ -17,7 +17,7 @@ import json, time, random, subprocess, os, sys, glob
 from datetime import datetime
 import requests
 
-OUTPUT_FILE = "A股成交额TOP100.html"
+OUTPUT_FILE = "index.html"
 DATA_DIR = "data"
 EM_MIN_INTERVAL = 0.8
 _em_last_call = [0.0]
