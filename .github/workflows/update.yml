@@ -42,7 +42,9 @@ jobs:
         run: npm install -g westock-data-cli 2>&1 || echo "WeStock CLI install skipped"
 
       - name: Run report generator
-        run: python generate_report.py 2>&1
+        run: |
+          python generate_report.py 2>&1 || \
+          (echo "First attempt failed, retrying in 30s..." && sleep 30 && python generate_report.py 2>&1)
         env:
           NO_PROXY: '*'
           PYTHONUNBUFFERED: '1'

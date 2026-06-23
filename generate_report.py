@@ -17,6 +17,10 @@ import json, time, random, subprocess, os, sys, glob
 from datetime import datetime
 import requests
 
+# Windows GBK 控制台兼容: 确保 print emoji 不崩溃
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 OUTPUT_FILE = "index.html"
 DATA_DIR = "data"
 EM_MIN_INTERVAL = 0.8
@@ -39,6 +43,7 @@ def em_get(url, params=None, timeout=20):
         return r
     except Exception as e:
         _em_last_call[0] = time.time()
+        print(f"  [ERROR] HTTP请求失败: {type(e).__name__}: {e}")
         return None
 
 
@@ -53,7 +58,7 @@ def em_json(url, params=None, timeout=20):
 
 
 def get_top100():
-    """东财全市场成交额 TOP100"""
+    """东财全市场成交额 TOP100（含3次重试）"""
     url = "https://push2.eastmoney.com/api/qt/clist/get"
     params = {
         "pn": "1", "pz": "100", "po": "1", "np": "1", "fltt": "2", "invt": "2",
@@ -61,8 +66,35 @@ def get_top100():
         "fields": "f2,f3,f6,f12,f13,f14,f15,f17,f18,f20,f100,f102,f127",
         "fid": "f6",
     }
-    d = em_json(url, params)
-    return d.get("data", {}).get("diff", []), d.get("data", {}).get("total", 0)
+    max_retries = 3
+    for attempt in range(1, max_retries + 1):
+        r = em_get(url, params)
+        if r is not None:
+            # 有HTTP响应，尝试解析JSON
+            try:
+                d = r.json()
+            except Exception as e:
+                print(f"  [WARN] 第{attempt}/{max_retries}次: JSON解析失败 (HTTP {r.status_code}): {e}")
+                if attempt < max_retries:
+                    wait = 2 + random.uniform(0, 1)
+                    print(f"  等待 {wait:.1f}s 后重试...")
+                    time.sleep(wait)
+                continue
+            diff = d.get("data", {}).get("diff", [])
+            total = d.get("data", {}).get("total", 0)
+            if diff:
+                return diff, total
+            # 有响应但无数据（可能是非交易日或盘前）
+            print(f"  [WARN] 第{attempt}/{max_retries}次: API返回空数据 (HTTP {r.status_code})")
+        else:
+            # em_get 已打印异常信息
+            print(f"  [WARN] 第{attempt}/{max_retries}次: HTTP请求失败（异常详见上方日志）")
+        if attempt < max_retries:
+            wait = 2 + random.uniform(0, 1)
+            print(f"  等待 {wait:.1f}s 后重试...")
+            time.sleep(wait)
+    print(f"  [ERROR] 东财API {max_retries}次重试全部失败")
+    return [], 0
 
 
 def adjust_qfq(df, xdxr_df):
@@ -752,11 +784,11 @@ def main():
     print(f"  获取 {len(items)} 条 (全市场 {total} 只)")
 
     if not items:
-        print("[WARN] 东财数据获取失败，尝试从历史数据生成HTML...")
+        print("[ERROR] 东财数据获取失败（3次重试均失败），尝试从历史数据生成HTML...")
         history = load_historical_data(work_dir, max_days=60)
         if not history:
             print("[ERROR] 无历史数据，无法生成报告")
-            return
+            sys.exit(1)
         latest_date = sorted(history.keys())[-1]
         slim_history = {}
         for dk, dv in history.items():
@@ -775,7 +807,9 @@ def main():
             f.write(html)
         print(f"\n  报告已从历史数据生成: {OUTPUT_FILE}")
         print(f"  历史天数: {len(slim_history)}")
-        return
+        print("[ERROR] 数据未更新！今日数据获取失败，HTML仅含历史数据（时间戳已更新）")
+        print("[ERROR] 请检查东财API连通性或重试")
+        sys.exit(1)
 
     stocks = []
     for it in items[:100]:
