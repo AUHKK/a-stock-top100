@@ -14,7 +14,7 @@ A股成交额TOP100 数据报告生成器 v4
 """
 
 import json, time, random, subprocess, os, sys, glob
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import requests
 
 # Windows GBK 控制台兼容: 确保 print emoji 不崩溃
@@ -843,7 +843,9 @@ def main():
     print("=" * 60)
 
     t0 = time.time()
-    now = datetime.now()
+    # 统一使用北京时间 (UTC+8)，确保本地和 GitHub Actions 显示一致
+    beijing_tz = timezone(timedelta(hours=8))
+    now = datetime.now(beijing_tz)
     date_str = now.strftime("%Y-%m-%d")
     gen_time = now.strftime("%Y-%m-%d %H:%M:%S")
     work_dir = os.path.dirname(os.path.abspath(__file__))
