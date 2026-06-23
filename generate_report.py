@@ -113,7 +113,11 @@ def get_top100_sina():
 
 
 def get_top100():
-    """东财全市场成交额 TOP100（含3次重试，失败后切换新浪财经API）"""
+    """东财全市场成交额 TOP100（含3次重试，失败后切换新浪财经API）
+
+    Returns:
+        (items, total, source): items=股票列表, total=全市场数, source=数据来源标识
+    """
     url = "https://push2.eastmoney.com/api/qt/clist/get"
     params = {
         "pn": "1", "pz": "100", "po": "1", "np": "1", "fltt": "2", "invt": "2",
@@ -138,7 +142,7 @@ def get_top100():
             diff = d.get("data", {}).get("diff", [])
             total = d.get("data", {}).get("total", 0)
             if diff:
-                return diff, total
+                return diff, total, "东方财富"
             # 有响应但无数据（可能是非交易日或盘前）
             print(f"  [WARN] 第{attempt}/{max_retries}次: API返回空数据 (HTTP {r.status_code})")
         else:
@@ -153,9 +157,9 @@ def get_top100():
     sina_items, sina_total = get_top100_sina()
     if sina_items:
         print(f"  [OK] 新浪财经API获取成功: {len(sina_items)} 条 (全市场 {sina_total} 只)")
-        return sina_items, sina_total
+        return sina_items, sina_total, "新浪财经(备用)"
     print(f"  [ERROR] 新浪财经API也失败，所有数据源均不可用")
-    return [], 0
+    return [], 0, ""
 
 
 def adjust_qfq(df, xdxr_df):
@@ -553,7 +557,7 @@ def load_historical_data(work_dir, max_days=60):
 
 
 # ── HTML 模板 (用 {{ }} 替代 { } 以避开冲突) ──
-def build_html(history_json, latest_date, gen_time):
+def build_html(history_json, latest_date, gen_time, top100_source="", index_source=""):
     """构建完整 HTML（内嵌历史数据，含移动端适配）"""
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
@@ -585,6 +589,8 @@ body{{font-family:"Microsoft YaHei","PingFang SC",-apple-system,sans-serif;backg
 .sc.r .v{{color:#e74c3c}}
 .sc.g .v{{color:#27ae60}}
 .sc.t .v{{color:#2c3e50}}
+.dsr{{font-size:11px;color:#888;padding:8px 25px 4px;border-bottom:1px solid #f0f0f0;background:#fafbfc}}
+.dsr b{{color:#555;font-weight:600}}
 .ip{{display:flex;gap:10px;padding:10px 25px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);flex-wrap:wrap}}
 .ic{{background:#f8f9fa;border-radius:8px;padding:8px 12px;min-width:130px;border:2px solid transparent;flex:1;max-width:200px}}
 .ic .n{{font-size:11px;color:#666;font-weight:500}}
@@ -691,6 +697,7 @@ tr:nth-child(even):hover{{background:#f0f7ff}}
   .tc table{{display:none}}
   .mc{{display:block}}
   .ft{{padding:12px 8px;font-size:10px}}
+  .dsr{{padding:6px 12px 2px;font-size:10px}}
 }}
 </style>
 </head>
@@ -720,7 +727,9 @@ tr:nth-child(even):hover{{background:#f0f7ff}}
 <div class="sc t"><div class="v" id="ta">-</div><div class="l">💰 TOP100总成交额(亿)</div></div>
 <div class="sc t"><div class="v" id="th">-</div><div class="l">📊 第100名门槛(亿)</div></div>
 </div>
+<div class="dsr" id="dsri">📊 主要指数 · <b>数据来源: {index_source or "无"}</b></div>
 <div class="ip" id="ip"></div>
+<div class="dsr" id="dsrt">💰 TOP100排行 · <b>数据来源: {top100_source or "无"}</b></div>
 <div class="tc">
 <div class="tb">
 <span class="info">点击表头排序 | 搜索过滤</span>
@@ -841,8 +850,8 @@ def main():
 
     # ── 1. TOP100 ──
     print("\n[1/6] 获取成交额 TOP100（东财）...")
-    items, total = get_top100()
-    print(f"  获取 {len(items)} 条 (全市场 {total} 只)")
+    items, total, top100_source = get_top100()
+    print(f"  获取 {len(items)} 条 (全市场 {total} 只) [来源: {top100_source or '无'}]")
 
     if not items:
         print("[ERROR] 东财数据获取失败（3次重试均失败），尝试从历史数据生成HTML...")
@@ -861,7 +870,8 @@ def main():
             }
         html = build_html(
             json.dumps(slim_history, ensure_ascii=False, separators=(",", ":")),
-            latest_date, datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            latest_date, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "无（历史数据）", "无（历史数据）"
         )
         output_path = os.path.join(work_dir, OUTPUT_FILE)
         with open(output_path, "w", encoding="utf-8") as f:
@@ -908,6 +918,8 @@ def main():
     # ── 3. 指数 ──
     print("\n[3/6] 获取主要指数（WeStock Data）...")
     index_data = get_index_data()
+    index_source = "WeStock Data" if index_data else "无数据"
+    print(f"  获取 {len(index_data)} 个指数 [来源: {index_source}]")
 
     # ── 4. 异动 ──
     print("\n[4/6] 计算异动/严重异动距离...")
@@ -1012,7 +1024,8 @@ def main():
 
     html = build_html(
         json.dumps(slim_history, ensure_ascii=False, separators=(",", ":")),
-        latest_date, gen_time
+        latest_date, gen_time,
+        top100_source or "无", index_source
     )
     output_path = os.path.join(work_dir, OUTPUT_FILE)
     with open(output_path, "w", encoding="utf-8") as f:

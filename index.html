@@ -28,6 +28,8 @@ body{font-family:"Microsoft YaHei","PingFang SC",-apple-system,sans-serif;backgr
 .sc.r .v{color:#e74c3c}
 .sc.g .v{color:#27ae60}
 .sc.t .v{color:#2c3e50}
+.dsr{font-size:11px;color:#888;padding:8px 25px 4px;border-bottom:1px solid #f0f0f0;background:#fafbfc}
+.dsr b{color:#555;font-weight:600}
 .ip{display:flex;gap:10px;padding:10px 25px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);flex-wrap:wrap}
 .ic{background:#f8f9fa;border-radius:8px;padding:8px 12px;min-width:130px;border:2px solid transparent;flex:1;max-width:200px}
 .ic .n{font-size:11px;color:#666;font-weight:500}
@@ -134,6 +136,7 @@ tr:nth-child(even):hover{background:#f0f7ff}
   .tc table{display:none}
   .mc{display:block}
   .ft{padding:12px 8px;font-size:10px}
+  .dsr{padding:6px 12px 2px;font-size:10px}
 }
 </style>
 </head>
@@ -163,7 +166,9 @@ tr:nth-child(even):hover{background:#f0f7ff}
 <div class="sc t"><div class="v" id="ta">-</div><div class="l">💰 TOP100总成交额(亿)</div></div>
 <div class="sc t"><div class="v" id="th">-</div><div class="l">📊 第100名门槛(亿)</div></div>
 </div>
+<div class="dsr" id="dsri">📊 主要指数 · <b>数据来源: WeStock Data</b></div>
 <div class="ip" id="ip"></div>
+<div class="dsr" id="dsrt">💰 TOP100排行 · <b>数据来源: 东方财富</b></div>
 <div class="tc">
 <div class="tb">
 <span class="info">点击表头排序 | 搜索过滤</span>
