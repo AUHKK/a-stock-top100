@@ -57,8 +57,63 @@ def em_json(url, params=None, timeout=20):
         return {}
 
 
+def get_top100_sina():
+    """新浪财经API获取成交额TOP100（备用数据源）
+
+    返回格式与东财API的diff列表兼容:
+    [{f2, f3, f6, f12, f13, f14, f20, f100}, ...], total
+    """
+    try:
+        url = "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData"
+        params = {
+            "page": "1", "num": "100", "sort": "amount",
+            "asc": "0", "node": "hs_a", "_s_r_a": "sort",
+        }
+        # 独立Session，不使用EM_SESSION避免节流等待
+        s = requests.Session()
+        s.trust_env = False
+        s.headers.update({"User-Agent": UA})
+        r = s.get(url, params=params, timeout=20)
+        rows = r.json()
+        if not rows or not isinstance(rows, list):
+            print(f"  [ERROR] 新浪API请求失败: 返回数据格式异常")
+            return [], 0
+
+        def _sf(v, default=0.0):
+            """安全转float，处理'-'等非数字值"""
+            try:
+                return float(v)
+            except (ValueError, TypeError):
+                return default
+
+        items = []
+        for row in rows:
+            raw_code = str(row.get("code", "")).strip()
+            if not raw_code:
+                continue
+            # 新浪code格式如"sh603986"/"sz300308"，取后6位为股票代码
+            code = raw_code[-6:].zfill(6)
+            # f13市场标识: 6/9开头=沪市(1)，其余=深市(0)
+            f13 = 1 if code[0] in ("6", "9") else 0
+            items.append({
+                "f2": _sf(row.get("trade")),            # 当前价格
+                "f3": _sf(row.get("changepercent")),    # 涨跌幅(%)
+                "f6": _sf(row.get("amount")),           # 成交额(元)
+                "f12": code,                            # 股票代码
+                "f13": f13,                             # 市场标识
+                "f14": row.get("name", ""),             # 股票名称
+                "f20": _sf(row.get("mktcap")) * 10000,  # 市值(万元→元)
+                "f100": "",                             # 新浪不提供行业
+            })
+        total = len(items)
+        return items, total
+    except Exception as e:
+        print(f"  [ERROR] 新浪API请求失败: {type(e).__name__}: {e}")
+        return [], 0
+
+
 def get_top100():
-    """东财全市场成交额 TOP100（含3次重试）"""
+    """东财全市场成交额 TOP100（含3次重试，失败后切换新浪财经API）"""
     url = "https://push2.eastmoney.com/api/qt/clist/get"
     params = {
         "pn": "1", "pz": "100", "po": "1", "np": "1", "fltt": "2", "invt": "2",
@@ -94,6 +149,12 @@ def get_top100():
             print(f"  等待 {wait:.1f}s 后重试...")
             time.sleep(wait)
     print(f"  [ERROR] 东财API {max_retries}次重试全部失败")
+    print(f"  [INFO] 尝试备用数据源（新浪财经）...")
+    sina_items, sina_total = get_top100_sina()
+    if sina_items:
+        print(f"  [OK] 新浪财经API获取成功: {len(sina_items)} 条 (全市场 {sina_total} 只)")
+        return sina_items, sina_total
+    print(f"  [ERROR] 新浪财经API也失败，所有数据源均不可用")
     return [], 0
 
 
