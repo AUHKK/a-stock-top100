@@ -556,6 +556,105 @@ def load_historical_data(work_dir, max_days=60):
     return history
 
 
+def cleanup_old_data(work_dir, keep_days=100, trigger_interval=600):
+    """清理旧数据文件
+
+    每过 trigger_interval 个交易日（即 data/ 目录中 JSON 文件数量达到其倍数时）
+    触发一次清理。清理时保留最近 keep_days 个交易日的数据文件，删除更早的文件，
+    同时清理 .top100_cache.json 中超过 keep_days 天的日期键。
+
+    Args:
+        work_dir: 工作目录路径
+        keep_days: 保留最近多少个交易日的数据，默认 100
+        trigger_interval: 触发清理的交易日间隔，默认 600
+    """
+    data_path = os.path.join(work_dir, DATA_DIR)
+
+    # 目录不存在，跳过清理
+    if not os.path.exists(data_path):
+        print(f"  [清理] data/ 目录不存在，跳过清理")
+        return
+
+    # 统计 JSON 文件数量（即交易日数）
+    json_files = glob.glob(os.path.join(data_path, "*.json"))
+    count = len(json_files)
+
+    # 文件数少于 keep_days，无需清理
+    if count < keep_days:
+        print(f"  [清理] 当前交易日数: {count}（少于 {keep_days} 天），跳过清理")
+        return
+
+    # 检查是否达到触发条件（文件数量是 trigger_interval 的倍数）
+    if count % trigger_interval != 0:
+        print(f"  [清理] 当前交易日数: {count}（未达到 {trigger_interval} 的倍数），跳过清理")
+        return
+
+    # ── 触发清理 ──
+    print(f"  [清理] 触发清理！当前交易日数: {count}（{trigger_interval} 的倍数）")
+    print(f"  [清理] 保留策略: 最近 {keep_days} 个交易日")
+
+    # 按文件名（日期 YYYY-MM-DD）排序，字母序等同于日期序
+    json_files_sorted = sorted(json_files)
+
+    # 需要保留的文件（最近 keep_days 天）
+    keep_files = json_files_sorted[-keep_days:]
+    # 需要删除的文件
+    delete_files = json_files_sorted[:-keep_days] if count > keep_days else []
+
+    # 清理前打印将被删除的文件列表
+    print(f"  [清理] 将删除 {len(delete_files)} 个文件:")
+    for fp in delete_files:
+        print(f"    - {os.path.basename(fp)}")
+
+    # 物理删除文件（只删除 data/ 目录下的 .json 文件）
+    deleted_count = 0
+    for fp in delete_files:
+        try:
+            os.remove(fp)
+            deleted_count += 1
+        except Exception as e:
+            print(f"    [WARN] 删除失败: {os.path.basename(fp)} ({e})")
+
+    # 打印保留的日期范围
+    keep_dates = [os.path.basename(fp).replace(".json", "") for fp in keep_files]
+    print(f"  [清理] 已删除 {deleted_count} 个文件，保留 {len(keep_files)} 个文件")
+    print(f"  [清理] 保留日期范围: {keep_dates[0]} ~ {keep_dates[-1]}")
+    print(f"  [清理] 保留的日期: {', '.join(keep_dates)}")
+
+    # ── 清理 .top100_cache.json 中超过 keep_days 天的日期键 ──
+    cache_file = os.path.join(work_dir, ".top100_cache.json")
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file, "r", encoding="utf-8") as f:
+                cache = json.load(f)
+
+            cache_keys = sorted(cache.keys())
+            if len(cache_keys) > keep_days:
+                # 保留最近 keep_days 天的键
+                keep_keys = set(cache_keys[-keep_days:])
+                removed_cache_keys = [k for k in cache_keys if k not in keep_keys]
+
+                # 打印将被清除的缓存键
+                print(f"  [清理] 缓存中将清除 {len(removed_cache_keys)} 个日期键:")
+                for k in removed_cache_keys:
+                    print(f"    - {k}")
+
+                # 清除旧键并写回
+                cache = {k: v for k, v in cache.items() if k in keep_keys}
+                with open(cache_file, "w", encoding="utf-8") as f:
+                    json.dump(cache, f, ensure_ascii=False)
+
+                print(f"  [清理] 缓存已更新，保留 {len(cache)} 个日期键")
+            else:
+                print(f"  [清理] 缓存日期键数: {len(cache_keys)}（少于 {keep_days}，无需清理）")
+        except Exception as e:
+            print(f"  [清理] 缓存清理失败: {e}")
+    else:
+        print(f"  [清理] 缓存文件不存在，跳过缓存清理")
+
+    print(f"  [清理] 清理完成")
+
+
 # ── HTML 模板 (用 {{ }} 替代 { } 以避开冲突) ──
 def build_html(history_json, latest_date, gen_time, top100_source="", index_source=""):
     """构建完整 HTML（内嵌历史数据，含移动端适配）"""
@@ -1005,6 +1104,9 @@ def main():
     # ── 保存当日 JSON ──
     print("\n保存当日数据...")
     save_daily_data(work_dir, date_str, stocks_data, index_data, meta)
+
+    # ── 清理旧数据（每 600 个交易日触发一次，保留最近 100 天）──
+    cleanup_old_data(work_dir, keep_days=100, trigger_interval=600)
 
     # ── 加载历史数据 ──
     print("加载历史数据...")
