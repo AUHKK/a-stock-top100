@@ -2,8 +2,8 @@ name: Update TOP100 Report
 
 on:
   schedule:
-    # 每个交易日（周一至五）北京时间 16:15 = UTC 08:15
-    - cron: '15 8 * * 1-5'
+    # 每个交易日（周一至五）北京时间 17:00 = UTC 09:00
+    - cron: '0 9 * * 1-5'
   workflow_dispatch:
 
 permissions:
