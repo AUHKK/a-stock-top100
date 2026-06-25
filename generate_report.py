@@ -1046,19 +1046,51 @@ def main():
         s["industry_detail"] = s.get("industry", "")
 
     # ── 6. 上榜次数 ──
-    print("\n[6/6] 计算上榜次数（缓存）...")
+    print("\n[6/6] 计算上榜次数（缓存 + data/ 回补）...")
     cache_file = os.path.join(work_dir, ".top100_cache.json")
-    hist = []
+
+    # 6.1 加载缓存（日期 → 当日上榜股票代码列表）
+    cache = {}
     if os.path.exists(cache_file):
         try:
             with open(cache_file, "r", encoding="utf-8") as f:
                 cache = json.load(f)
-            for dk in sorted(cache.keys(), reverse=True)[:30]:
-                hist.append(set(cache[dk]))
-            print(f"  缓存: {len(hist)} 天")
-        except:
-            print("  缓存读取失败")
+        except Exception:
+            print("  缓存读取失败，从空缓存开始")
+            cache = {}
+    cache_days = len(cache)
 
+    # 6.2 扫描 data/ 目录，从历史 JSON 补充缓存中缺失的日期
+    #     缓存已有的日期以缓存为准；缓存没有的日期从 data/*.json 补充
+    data_path = os.path.join(work_dir, DATA_DIR)
+    data_supplement_days = 0
+    if os.path.isdir(data_path):
+        for fp in glob.glob(os.path.join(data_path, "*.json")):
+            dk = os.path.basename(fp).replace(".json", "")
+            if dk == date_str:
+                continue  # 排除今天（今天尚未计入历史）
+            if dk in cache:
+                continue  # 缓存已有，以缓存为准
+            try:
+                with open(fp, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                codes = [str(s.get("code", "")).zfill(6)
+                         for s in d.get("stocks", []) if s.get("code")]
+                if codes:
+                    cache[dk] = codes
+                    data_supplement_days += 1
+            except Exception:
+                continue  # 跳过损坏/格式异常的文件
+
+    # 6.3 按日期降序取最近 30 天（排除今天），构建历史上榜集合
+    hist_dates = sorted(
+        [dk for dk in cache.keys() if dk != date_str],
+        reverse=True
+    )[:30]
+    hist = [set(cache[dk]) for dk in hist_dates]
+    print(f"  历史数据: {len(hist)} 天（缓存 {cache_days} 天 + data/ 补充 {data_supplement_days} 天）")
+
+    # 6.4 计算每只股票近 10 日 / 近 30 日上榜次数
     for s in stocks:
         a10, a30 = 0, 0
         for j, hset in enumerate(hist):
@@ -1069,19 +1101,12 @@ def main():
         s["board_10d"] = a10
         s["board_30d"] = a30
 
-    # 更新缓存
-    cache = {}
-    if os.path.exists(cache_file):
-        try:
-            with open(cache_file, "r", encoding="utf-8") as f:
-                cache = json.load(f)
-        except:
-            cache = {}
+    # 6.5 更新缓存：写入今日代码 + 保留 data/ 回补的历史日期，一劳永逸
     cache[date_str] = [s["code"] for s in stocks]
     cache = dict(sorted(cache.items())[-60:])
     with open(cache_file, "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False)
-    print(f"  今日缓存已更新")
+    print(f"  缓存已更新（今日 + 回补历史，共 {len(cache)} 天）")
 
     # ── 生成数据 ──
     stocks_data = [{
