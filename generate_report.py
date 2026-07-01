@@ -767,6 +767,9 @@ tr:nth-child(even):hover{{background:#f0f7ff}}
 .mc .tag.abn{{background:#fff3cd;color:#856404}}
 .mc .tag.sev{{background:#ffe0e0;color:#e74c3c}}
 .mc .tags{{padding:4px 0 2px}}
+.new-tag{{color:#42a5f5;font-weight:600}}
+.row-hot{{background:#fffde7}}
+.ci-hot{{background:#fffde7}}
 
 /* ── 移动端响应式 ── */
 @media(max-width:768px){{
@@ -849,11 +852,12 @@ tr:nth-child(even):hover{{background:#f0f7ff}}
 <th width="65" class="st" onclick="ds('gain_30d')">30日涨幅</th>
 <th width="75" class="st" onclick="ds('dist_abnormal')">距异动</th>
 <th width="80" class="st" onclick="ds('dist_severe')">距严重异动</th>
+<th width="55">连续上榜</th>
 <th width="50">10日上榜</th>
 <th width="50">30日上榜</th>
 </tr>
 </thead>
-<tbody id="tb"><tr class="nd"><td colspan="14"><div class="sp"></div>加载中...</td></tr></tbody>
+<tbody id="tb"><tr class="nd"><td colspan="15"><div class="sp"></div>加载中...</td></tr></tbody>
 </table>
 <!-- 移动端卡片容器 -->
 <div class="mc" id="mc"><div style="text-align:center;padding:40px 20px;color:#999"><div class="sp"></div>加载中...</div></div>
@@ -881,7 +885,7 @@ function es(s){{return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace
 
 /* ── 日期导航 ── */
 function cd(d){{/* 选择日期 */
-  if(!H[d]){{document.getElementById("tb").innerHTML='<tr><td colspan="14" class="nodata"><div class="icon">📭</div>'+d+' 无数据</td></tr>';document.getElementById("mc").innerHTML='<div class="nodata"><div class="icon">📭</div>'+d+' 无数据</div>';return}}
+  if(!H[d]){{document.getElementById("tb").innerHTML='<tr><td colspan="15" class="nodata"><div class="icon">📭</div>'+d+' 无数据</td></tr>';document.getElementById("mc").innerHTML='<div class="nodata"><div class="icon">📭</div>'+d+' 无数据</div>';return}}
   CD=d;ld();/* 加载数据 */
 }}
 function pd(){{/* 上一交易日 */
@@ -918,7 +922,7 @@ function rs(D){{var r=0,g=0,t=0;D.forEach(function(s){{if(s.daily_gain>0)r++;els
 function ri(I){{var h="";for(var s in ix){{var x=I[s];if(!x)continue;var mg=x.month_gain||0,wg=x.week_gain||0;var mc=mg>5?"up":(mg<-5?"dn":"sh"),wc=wg>5?"up":(wg<-5?"dn":"sh");var ms=mg>5?"📈":(mg<-5?"📉":"📊"),ws=wg>5?"📈":(wg<-5?"📉":"📊");h+='<div class="ic"><div class="n">'+ix[s].n+'</div>';h+='<div class="v">'+(x.latest_value||0).toFixed(2)+'</div>';h+='<div class="chg '+(x.daily_gain>0?"c-up":x.daily_gain<0?"c-dn":"")+'">'+fp(x.daily_gain)+'</div>';h+='<div class="rw '+mc+'"><span>月涨幅 '+ms+'</span><span>'+fp(mg)+'</span></div>';h+='<div class="rw '+wc+'"><span>周涨幅 '+ws+'</span><span>'+fp(wg)+'</span></div>';h+='</div>'}}document.getElementById("ip").innerHTML=h}}
 
 /* ── PC表格渲染 ── */
-function rt(a){{var tb=document.getElementById("tb");var mc=document.getElementById("mc");if(!a||!a.length){{tb.innerHTML='<tr><td colspan="14" class="nd">暂无数据</td></tr>';mc.innerHTML='<div class="nodata"><div class="icon">📭</div>暂无数据</div>';return}}var my=Math.max.apply(null,a.map(function(s){{return s.amount||0}}));/* PC表格 */var h="";a.forEach(function(s,i){{var rk=i+1,rc=rk<=3?"t3":(rk<=10?"t10":""),gc=s.daily_gain>0?"gu":(s.daily_gain<0?"gd":"");h+='<tr>';h+='<td class="rk '+rc+'">'+rk+'</td>';h+='<td><span class="sn">'+es(s.name)+'</span></td>';h+='<td><span class="scd">'+es(s.code)+'</span></td>';h+='<td><span class="itg">'+es(s.industry||"-")+'</span></td>';h+='<td class="amt">'+(s.price?(s.price<1?s.price.toFixed(3):s.price.toFixed(2)):"-")+'</td>';h+='<td class="amt">'+fb(s.amount||0,my)+'</td>';h+='<td class="'+gc+'">'+fg(s.daily_gain)+'</td>';h+='<td>'+fg(s.gain_3d)+'</td>';h+='<td>'+fg(s.gain_10d)+'</td>';h+='<td>'+fg(s.gain_30d)+'</td>';h+='<td>'+fn(s.dist_abnormal)+'</td>';h+='<td>'+fn(s.dist_severe)+'</td>';h+='<td>'+(s.board_10d||0)+'</td>';h+='<td>'+(s.board_30d||0)+'</td>';h+='</tr>'}});tb.innerHTML=h;/* 移动端卡片 */var mh="";a.forEach(function(s,i){{var rk=i+1,rc=rk<=3?"t3":(rk<=10?"t10":"");var dg=s.daily_gain||0;var dc=dg>0?"up":(dg<0?"dn":"");var ds2=dg>0?"+":"";var amtYi=((s.amount||0)/1e8).toFixed(2);mh+='<div class="ci" onclick="tg(this)">';mh+='<div class="ch">';mh+='<div class="crk '+rc+'">'+rk+'</div>';mh+='<div class="cnm"><div class="nm">'+es(s.name)+'</div><div class="cd2">'+es(s.code)+'</div></div>';mh+='<div class="cdg '+dc+'">'+ds2+dg.toFixed(2)+'%</div>';mh+='<div class="camt"><div class="av2">'+amtYi+'亿</div><div class="al2">成交额</div></div>';mh+='<div class="chev">▶</div>';mh+='</div>';/* 展开详情 */mh+='<div class="cd3">';mh+='<div class="dr"><span class="dl">行业/概念</span><span class="dv"><span class="tag ind">'+es(s.industry||"-")+'</span></span></div>';mh+='<div class="dr"><span class="dl">收盘价</span><span class="dv">'+(s.price?(s.price<1?s.price.toFixed(3):s.price.toFixed(2)):"-")+'</span></div>';mh+='<div class="dr"><span class="dl">成交额</span><span class="dv amt">'+amtYi+' 亿</span></div>';mh+='<div class="dr"><span class="dl">3日涨幅</span><span class="dv '+(s.gain_3d>0?"gu":s.gain_3d<0?"gd":"")+'">'+fp(s.gain_3d)+'</span></div>';mh+='<div class="dr"><span class="dl">10日涨幅</span><span class="dv '+(s.gain_10d>0?"gu":s.gain_10d<0?"gd":"")+'">'+fp(s.gain_10d)+'</span></div>';mh+='<div class="dr"><span class="dl">30日涨幅</span><span class="dv '+(s.gain_30d>0?"gu":s.gain_30d<0?"gd":"")+'">'+fp(s.gain_30d)+'</span></div>';var da=s.dist_abnormal,dse=s.dist_severe;var abnTag=da!=null&&da<0?'<span class="tag sev">触发</span>':da!=null&&da<8?'<span class="tag abn">距'+da.toFixed(1)+'%</span>':'';var sevTag=dse!=null&&dse<0?'<span class="tag sev">触发</span>':dse!=null&&dse<8?'<span class="tag abn">距'+dse.toFixed(1)+'%</span>':'';mh+='<div class="dr"><span class="dl">距异动</span><span class="dv tags">'+fn(da)+' '+abnTag+'</span></div>';mh+='<div class="dr"><span class="dl">距严重异动</span><span class="dv tags">'+fn(dse)+' '+sevTag+'</span></div>';mh+='<div class="dr"><span class="dl">上榜次数</span><span class="dv">10日 '+(s.board_10d||0)+'次 / 30日 '+(s.board_30d||0)+'次</span></div>';mh+='</div></div>'}});mc.innerHTML=mh}}
+function rt(a){{var tb=document.getElementById("tb");var mc=document.getElementById("mc");if(!a||!a.length){{tb.innerHTML='<tr><td colspan="15" class="nd">暂无数据</td></tr>';mc.innerHTML='<div class="nodata"><div class="icon">📭</div>暂无数据</div>';return}}var my=Math.max.apply(null,a.map(function(s){{return s.amount||0}}));/* PC表格 */var h="";a.forEach(function(s,i){{var rk=i+1,rc=rk<=3?"t3":(rk<=10?"t10":""),gc=s.daily_gain>0?"gu":(s.daily_gain<0?"gd":"");var hot=s.consecutive>=10;h+='<tr'+(hot?' class="row-hot"':'')+'>';h+='<td class="rk '+rc+'">'+rk+'</td>';h+='<td><span class="sn">'+es(s.name)+'</span></td>';h+='<td><span class="scd">'+es(s.code)+'</span></td>';h+='<td><span class="itg">'+es(s.industry||"-")+'</span></td>';h+='<td class="amt">'+(s.price?(s.price<1?s.price.toFixed(3):s.price.toFixed(2)):"-")+'</td>';h+='<td class="amt">'+fb(s.amount||0,my)+'</td>';h+='<td class="'+gc+'">'+fg(s.daily_gain)+'</td>';h+='<td>'+fg(s.gain_3d)+'</td>';h+='<td>'+fg(s.gain_10d)+'</td>';h+='<td>'+fg(s.gain_30d)+'</td>';h+='<td>'+fn(s.dist_abnormal)+'</td>';h+='<td>'+fn(s.dist_severe)+'</td>';h+='<td>'+(s.consecutive===-1?'<span class="new-tag">NEW</span>':s.consecutive>=5?s.consecutive+'🔥':s.consecutive)+'</td>';h+='<td>'+(s.board_10d||0)+'</td>';h+='<td>'+(s.board_30d||0)+'</td>';h+='</tr>'}});tb.innerHTML=h;/* 移动端卡片 */var mh="";a.forEach(function(s,i){{var rk=i+1,rc=rk<=3?"t3":(rk<=10?"t10":"");var dg=s.daily_gain||0;var dc=dg>0?"up":(dg<0?"dn":"");var ds2=dg>0?"+":"";var amtYi=((s.amount||0)/1e8).toFixed(2);var hot2=s.consecutive>=10;mh+='<div class="ci'+(hot2?' ci-hot':'')+'" onclick="tg(this)">';mh+='<div class="ch">';mh+='<div class="crk '+rc+'">'+rk+'</div>';mh+='<div class="cnm"><div class="nm">'+es(s.name)+'</div><div class="cd2">'+es(s.code)+'</div></div>';mh+='<div class="cdg '+dc+'">'+ds2+dg.toFixed(2)+'%</div>';mh+='<div class="camt"><div class="av2">'+amtYi+'亿</div><div class="al2">成交额</div></div>';mh+='<div class="chev">▶</div>';mh+='</div>';/* 展开详情 */mh+='<div class="cd3">';mh+='<div class="dr"><span class="dl">行业/概念</span><span class="dv"><span class="tag ind">'+es(s.industry||"-")+'</span></span></div>';mh+='<div class="dr"><span class="dl">收盘价</span><span class="dv">'+(s.price?(s.price<1?s.price.toFixed(3):s.price.toFixed(2)):"-")+'</span></div>';mh+='<div class="dr"><span class="dl">成交额</span><span class="dv amt">'+amtYi+' 亿</span></div>';mh+='<div class="dr"><span class="dl">3日涨幅</span><span class="dv '+(s.gain_3d>0?"gu":s.gain_3d<0?"gd":"")+'">'+fp(s.gain_3d)+'</span></div>';mh+='<div class="dr"><span class="dl">10日涨幅</span><span class="dv '+(s.gain_10d>0?"gu":s.gain_10d<0?"gd":"")+'">'+fp(s.gain_10d)+'</span></div>';mh+='<div class="dr"><span class="dl">30日涨幅</span><span class="dv '+(s.gain_30d>0?"gu":s.gain_30d<0?"gd":"")+'">'+fp(s.gain_30d)+'</span></div>';var da=s.dist_abnormal,dse=s.dist_severe;var abnTag=da!=null&&da<0?'<span class="tag sev">触发</span>':da!=null&&da<8?'<span class="tag abn">距'+da.toFixed(1)+'%</span>':'';var sevTag=dse!=null&&dse<0?'<span class="tag sev">触发</span>':dse!=null&&dse<8?'<span class="tag abn">距'+dse.toFixed(1)+'%</span>':'';mh+='<div class="dr"><span class="dl">距异动</span><span class="dv tags">'+fn(da)+' '+abnTag+'</span></div>';mh+='<div class="dr"><span class="dl">距严重异动</span><span class="dv tags">'+fn(dse)+' '+sevTag+'</span></div>';mh+='<div class="dr"><span class="dl">连续上榜</span><span class="dv">'+(s.consecutive===-1?'<span class="new-tag">NEW</span>':s.consecutive>=5?s.consecutive+'天🔥':s.consecutive+'天')+'</span></div>';mh+='<div class="dr"><span class="dl">上榜次数</span><span class="dv">10日 '+(s.board_10d||0)+'次 / 30日 '+(s.board_30d||0)+'次</span></div>';mh+='</div></div>'}});mc.innerHTML=mh}}
 
 /* ── 卡片展开/折叠 ── */
 function tg(el){{el.classList.toggle("exp")}}
@@ -1101,6 +1105,23 @@ def main():
         s["board_10d"] = a10
         s["board_30d"] = a30
 
+    # 6.4.1 计算连续上榜天数（从今天往回数，连续在榜的最大天数）
+    # hist 是降序排列的历史代码集合列表（昨天、前天、更前天...）
+    today_codes = set(s["code"] for s in stocks)
+    yesterday_codes = hist[0] if hist else set()  # 最近一个交易日（昨天）
+
+    for s in stocks:
+        if s["code"] not in yesterday_codes:
+            s["consecutive"] = -1  # -1 表示今天新上榜，前端显示 NEW
+        else:
+            consec = 1  # 今天上榜算1天
+            for hset in hist:  # hist 是降序的（昨天、前天、更前天...）
+                if s["code"] in hset:
+                    consec += 1
+                else:
+                    break  # 一旦断开就停止计数
+            s["consecutive"] = consec
+
     # 6.5 更新缓存：写入今日代码 + 保留 data/ 回补的历史日期，一劳永逸
     cache[date_str] = [s["code"] for s in stocks]
     cache = dict(sorted(cache.items())[-60:])
@@ -1120,6 +1141,7 @@ def main():
         "gain_30d": s.get("gain_30d", 0),
         "dist_abnormal": s.get("dist_abnormal", 0),
         "dist_severe": s.get("dist_severe", 0),
+        "consecutive": s.get("consecutive", 0),
         "board_10d": s.get("board_10d", 0),
         "board_30d": s.get("board_30d", 0),
     } for s in stocks]
