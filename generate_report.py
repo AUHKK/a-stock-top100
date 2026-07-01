@@ -768,8 +768,8 @@ tr:nth-child(even):hover{{background:#f0f7ff}}
 .mc .tag.sev{{background:#ffe0e0;color:#e74c3c}}
 .mc .tags{{padding:4px 0 2px}}
 .new-tag{{color:#42a5f5;font-weight:600}}
-.row-hot{{background:#fffde7}}
-.ci-hot{{background:#fffde7}}
+tr.row-hot{{background:#fffde7!important}}
+.mc .ci-hot{{background:#fffde7!important}}
 
 /* ── 移动端响应式 ── */
 @media(max-width:768px){{
