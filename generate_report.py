@@ -770,6 +770,24 @@ tr:nth-child(even):hover{{background:#f0f7ff}}
 .new-tag{{color:#42a5f5;font-weight:600}}
 tr.row-hot{{background:#fffde7!important}}
 .mc .ci-hot{{background:#fffde7!important}}
+.risk-bar{{display:flex;align-items:center;gap:12px;padding:8px 15px;margin:8px 25px 0;border-radius:6px;border:2px solid;font-size:12px;flex-wrap:wrap;transition:all .3s}}
+.rb-icon{{font-size:16px}}
+.rb-phase{{font-weight:700;font-size:14px}}
+.rb-item{{color:#555}}
+.rb-item b{{color:#333}}
+.rb-rule{{color:#777;font-size:11px;flex:1;min-width:200px}}
+.market-panel{{margin:0 25px 8px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden}}
+.mp-title{{padding:8px 15px;background:#f5f6fa;font-weight:600;font-size:13px;border-bottom:1px solid #e9ecef}}
+.mp-grid{{display:flex;flex-wrap:wrap;padding:10px 15px;gap:15px}}
+.mp-cell{{min-width:120px}}
+.mp-label{{font-size:11px;color:#888}}
+.mp-val{{font-size:14px;font-weight:600;margin-top:2px}}
+.mp-rules{{border-top:1px solid #f0f0f0}}
+.mp-rules summary{{padding:8px 15px;cursor:pointer;font-size:12px;color:#555;font-weight:500;user-select:none}}
+.mp-rules summary:hover{{background:#f9f9f9}}
+.mp-rule-list{{padding:4px 15px 10px}}
+.mp-rule-item{{padding:3px 0;font-size:11px;color:#666;line-height:1.6}}
+.mp-rule-item b{{color:#444}}
 
 /* ── 移动端响应式 ── */
 @media(max-width:768px){{
@@ -800,6 +818,12 @@ tr.row-hot{{background:#fffde7!important}}
   .mc{{display:block}}
   .ft{{padding:12px 8px;font-size:10px}}
   .dsr{{padding:6px 12px 2px;font-size:10px}}
+  .risk-bar{{margin:8px 10px 0;padding:6px 10px;gap:8px;font-size:11px}}
+  .rb-rule{{display:none}}
+  .market-panel{{margin:0 10px 8px}}
+  .mp-grid{{gap:10px}}
+  .mp-cell{{min-width:80px;flex:1}}
+  .mp-val{{font-size:12px}}
 }}
 </style>
 </head>
@@ -829,8 +853,10 @@ tr.row-hot{{background:#fffde7!important}}
 <div class="sc t"><div class="v" id="ta">-</div><div class="l">💰 TOP100总成交额(亿)</div></div>
 <div class="sc t"><div class="v" id="th">-</div><div class="l">📊 第100名门槛(亿)</div></div>
 </div>
+<div class="risk-bar" id="rb"></div>
 <div class="dsr" id="dsri">📊 主要指数 · <b>数据来源: {index_source or "无"}</b></div>
 <div class="ip" id="ip"></div>
+<div class="market-panel" id="mp"></div>
 <div class="dsr" id="dsrt">💰 TOP100排行 · <b>数据来源: {top100_source or "无"}</b></div>
 <div class="tc">
 <div class="tb">
@@ -912,7 +938,7 @@ function ld(){{/* 加载当前日期数据 */
   document.getElementById("dp").min=DK[0];
   document.getElementById("dp").max=DK[DK.length-1];
   /* 渲染 */
-  rs(D);ri(I);rt(D);
+  rs(D);ri(I);rr(I);rm(I);rt(D);
 }}
 
 /* ── 统计栏 ── */
@@ -920,6 +946,57 @@ function rs(D){{var r=0,g=0,t=0;D.forEach(function(s){{if(s.daily_gain>0)r++;els
 
 /* ── 指数面板 ── */
 function ri(I){{var h="";for(var s in ix){{var x=I[s];if(!x)continue;var mg=x.month_gain||0,wg=x.week_gain||0;var mc=mg>5?"up":(mg<-5?"dn":"sh"),wc=wg>5?"up":(wg<-5?"dn":"sh");var ms=mg>5?"📈":(mg<-5?"📉":"📊"),ws=wg>5?"📈":(wg<-5?"📉":"📊");h+='<div class="ic"><div class="n">'+ix[s].n+'</div>';h+='<div class="v">'+(x.latest_value||0).toFixed(2)+'</div>';h+='<div class="chg '+(x.daily_gain>0?"c-up":x.daily_gain<0?"c-dn":"")+'">'+fp(x.daily_gain)+'</div>';h+='<div class="rw '+mc+'"><span>月涨幅 '+ms+'</span><span>'+fp(mg)+'</span></div>';h+='<div class="rw '+wc+'"><span>周涨幅 '+ws+'</span><span>'+fp(wg)+'</span></div>';h+='</div>'}}document.getElementById("ip").innerHTML=h}}
+
+/* ── 风险等级提示条 ── */
+function rr(I){{
+  var sh=I["sh000001"];if(!sh){{document.getElementById("rb").innerHTML="";return}}
+  var mg=sh.month_gain||0;
+  var phase,color,icon,target,pos,rule;
+  if(mg<-5){{phase="下跌市";color="#e74c3c";icon="🔴";target="+0%（不亏损即完成）";pos="空仓休息";rule="大盘月涨幅<-5%，停止操作，空仓回避主跌段"}}
+  else if(mg<-2){{phase="平衡市偏弱";color="#e67e22";icon="🟠";target="+20%/月";pos="≤50%仓位";rule="周阴线-8%或两周连阴，无条件清仓退出"}}
+  else if(mg<2){{phase="平衡市";color="#f39c12";icon="🟡";target="+20%/月";pos="半仓操作";rule="周目标+10%，超越大盘涨幅1倍"}}
+  else if(mg<5){{phase="平衡市偏强";color="#8bc34a";icon="🟢";target="+20%/月";pos="可适当积极";rule="关注热点龙头，强势股从容低吸"}}
+  else{{phase="上涨市";color="#2ecc71";icon="🟢";target="+30%及以上/月";pos="可满仓操作";rule="追求周连阳，复利快速增长"}}
+  var rb=document.getElementById("rb");
+  rb.innerHTML='<span class="rb-icon">'+icon+'</span><span class="rb-phase" style="color:'+color+'">'+phase+'</span><span class="rb-item">月目标: <b>'+target+'</b></span><span class="rb-item">仓位: <b>'+pos+'</b></span><span class="rb-rule">'+rule+'</span>';
+  rb.style.borderColor=color;
+  rb.style.background=color+"15";
+}}
+
+/* ── 大盘环境判断面板 ── */
+function rm(I){{
+  var sh=I["sh000001"];if(!sh){{document.getElementById("mp").innerHTML="";return}}
+  var mg=sh.month_gain||0,wg=sh.week_gain||0,dg=sh.daily_gain||0;
+  var phase,color,icon,target,pos,rule;
+  if(mg<-5){{phase="下跌市";color="#e74c3c";icon="🔴";target="+0%（不亏损即完成）";pos="空仓休息";rule="大盘月涨幅<-5%，停止操作，空仓回避主跌段"}}
+  else if(mg<-2){{phase="平衡市偏弱";color="#e67e22";icon="🟠";target="+20%/月";pos="≤50%仓位";rule="周阴线-8%或两周连阴，无条件清仓退出"}}
+  else if(mg<2){{phase="平衡市";color="#f39c12";icon="🟡";target="+20%/月";pos="半仓操作";rule="周目标+10%，超越大盘涨幅1倍"}}
+  else if(mg<5){{phase="平衡市偏强";color="#8bc34a";icon="🟢";target="+20%/月";pos="可适当积极";rule="关注热点龙头，强势股从容低吸"}}
+  else{{phase="上涨市";color="#2ecc71";icon="🟢";target="+30%及以上/月";pos="可满仓操作";rule="追求周连阳，复利快速增长"}}
+  var h="";
+  h+='<div class="mp-title">🎯 好运哥交易系统 · 市场环境判断</div>';
+  h+='<div class="mp-grid">';
+  h+='<div class="mp-cell"><div class="mp-label">市场阶段</div><div class="mp-val" style="color:'+color+'">'+icon+' '+phase+'</div></div>';
+  h+='<div class="mp-cell"><div class="mp-label">月赢利目标</div><div class="mp-val">'+target+'</div></div>';
+  h+='<div class="mp-cell"><div class="mp-label">仓位建议</div><div class="mp-val">'+pos+'</div></div>';
+  h+='<div class="mp-cell"><div class="mp-label">上证月涨幅</div><div class="mp-val '+(mg>0?"c-up":"c-dn")+'">'+fp(mg)+'</div></div>';
+  h+='<div class="mp-cell"><div class="mp-label">上证周涨幅</div><div class="mp-val '+(wg>0?"c-up":"c-dn")+'">'+fp(wg)+'</div></div>';
+  h+='</div>';
+  h+='<details class="mp-rules"><summary>📋 交易纪律速查（点击展开/收起）</summary>';
+  h+='<div class="mp-rule-list">';
+  h+='<div class="mp-rule-item"><b>月目标：</b>上涨市+30%，平衡市+20%，下跌市空仓（+0%不亏损即完成）</div>';
+  h+='<div class="mp-rule-item"><b>周目标：</b>+10%，超越大盘涨幅1倍为基本目标</div>';
+  h+='<div class="mp-rule-item"><b>周阴线-8%或两周连阴：</b>无条件清仓退出，查找原因，重新制定计划</div>';
+  h+='<div class="mp-rule-item"><b>日3连阴：</b>无条件退出交易，检查原因</div>';
+  h+='<div class="mp-rule-item"><b>日2连阴：</b>高度警惕，检查行情和操作节奏</div>';
+  h+='<div class="mp-rule-item"><b>下跌市原则：</b>不追高，涨幅+3%以上坚决不追涨，空仓为第一原则</div>';
+  h+='<div class="mp-rule-item"><b>仓位控制：</b>行情良好满仓单一品种，不利时空仓，风险期≤50%</div>';
+  h+='<div class="mp-rule-item"><b>强势股操作：</b>只做龙一龙二，预期收益低于+10%不做，买入后操作期1-2周</div>';
+  h+='<div class="mp-rule-item"><b>卖点纪律：</b>强势品种放大量收阴须当日清仓，错买第一时间止损</div>';
+  h+='<div class="mp-rule-item"><b>心态管理：</b>生活中有影响心态的事件时暂停操作，休息也是战斗</div>';
+  h+='</div></details>';
+  document.getElementById("mp").innerHTML=h;
+}}
 
 /* ── PC表格渲染 ── */
 function rt(a){{var tb=document.getElementById("tb");var mc=document.getElementById("mc");if(!a||!a.length){{tb.innerHTML='<tr><td colspan="15" class="nd">暂无数据</td></tr>';mc.innerHTML='<div class="nodata"><div class="icon">📭</div>暂无数据</div>';return}}var my=Math.max.apply(null,a.map(function(s){{return s.amount||0}}));/* PC表格 */var h="";a.forEach(function(s,i){{var rk=i+1,rc=rk<=3?"t3":(rk<=10?"t10":""),gc=s.daily_gain>0?"gu":(s.daily_gain<0?"gd":"");var hot=s.consecutive>=10;h+='<tr'+(hot?' class="row-hot"':'')+'>';h+='<td class="rk '+rc+'">'+rk+'</td>';h+='<td><span class="sn">'+es(s.name)+'</span></td>';h+='<td><span class="scd">'+es(s.code)+'</span></td>';h+='<td><span class="itg">'+es(s.industry||"-")+'</span></td>';h+='<td class="amt">'+(s.price?(s.price<1?s.price.toFixed(3):s.price.toFixed(2)):"-")+'</td>';h+='<td class="amt">'+fb(s.amount||0,my)+'</td>';h+='<td class="'+gc+'">'+fg(s.daily_gain)+'</td>';h+='<td>'+fg(s.gain_3d)+'</td>';h+='<td>'+fg(s.gain_10d)+'</td>';h+='<td>'+fg(s.gain_30d)+'</td>';h+='<td>'+fn(s.dist_abnormal)+'</td>';h+='<td>'+fn(s.dist_severe)+'</td>';h+='<td>'+(s.consecutive===-1?'<span class="new-tag">NEW</span>':s.consecutive>=5?s.consecutive+'🔥':s.consecutive)+'</td>';h+='<td>'+(s.board_10d||0)+'</td>';h+='<td>'+(s.board_30d||0)+'</td>';h+='</tr>'}});tb.innerHTML=h;/* 移动端卡片 */var mh="";a.forEach(function(s,i){{var rk=i+1,rc=rk<=3?"t3":(rk<=10?"t10":"");var dg=s.daily_gain||0;var dc=dg>0?"up":(dg<0?"dn":"");var ds2=dg>0?"+":"";var amtYi=((s.amount||0)/1e8).toFixed(2);var hot2=s.consecutive>=10;mh+='<div class="ci'+(hot2?' ci-hot':'')+'" onclick="tg(this)">';mh+='<div class="ch">';mh+='<div class="crk '+rc+'">'+rk+'</div>';mh+='<div class="cnm"><div class="nm">'+es(s.name)+'</div><div class="cd2">'+es(s.code)+'</div></div>';mh+='<div class="cdg '+dc+'">'+ds2+dg.toFixed(2)+'%</div>';mh+='<div class="camt"><div class="av2">'+amtYi+'亿</div><div class="al2">成交额</div></div>';mh+='<div class="chev">▶</div>';mh+='</div>';/* 展开详情 */mh+='<div class="cd3">';mh+='<div class="dr"><span class="dl">行业/概念</span><span class="dv"><span class="tag ind">'+es(s.industry||"-")+'</span></span></div>';mh+='<div class="dr"><span class="dl">收盘价</span><span class="dv">'+(s.price?(s.price<1?s.price.toFixed(3):s.price.toFixed(2)):"-")+'</span></div>';mh+='<div class="dr"><span class="dl">成交额</span><span class="dv amt">'+amtYi+' 亿</span></div>';mh+='<div class="dr"><span class="dl">3日涨幅</span><span class="dv '+(s.gain_3d>0?"gu":s.gain_3d<0?"gd":"")+'">'+fp(s.gain_3d)+'</span></div>';mh+='<div class="dr"><span class="dl">10日涨幅</span><span class="dv '+(s.gain_10d>0?"gu":s.gain_10d<0?"gd":"")+'">'+fp(s.gain_10d)+'</span></div>';mh+='<div class="dr"><span class="dl">30日涨幅</span><span class="dv '+(s.gain_30d>0?"gu":s.gain_30d<0?"gd":"")+'">'+fp(s.gain_30d)+'</span></div>';var da=s.dist_abnormal,dse=s.dist_severe;var abnTag=da!=null&&da<0?'<span class="tag sev">触发</span>':da!=null&&da<8?'<span class="tag abn">距'+da.toFixed(1)+'%</span>':'';var sevTag=dse!=null&&dse<0?'<span class="tag sev">触发</span>':dse!=null&&dse<8?'<span class="tag abn">距'+dse.toFixed(1)+'%</span>':'';mh+='<div class="dr"><span class="dl">距异动</span><span class="dv tags">'+fn(da)+' '+abnTag+'</span></div>';mh+='<div class="dr"><span class="dl">距严重异动</span><span class="dv tags">'+fn(dse)+' '+sevTag+'</span></div>';mh+='<div class="dr"><span class="dl">连续上榜</span><span class="dv">'+(s.consecutive===-1?'<span class="new-tag">NEW</span>':s.consecutive>=5?s.consecutive+'天🔥':s.consecutive+'天')+'</span></div>';mh+='<div class="dr"><span class="dl">上榜次数</span><span class="dv">10日 '+(s.board_10d||0)+'次 / 30日 '+(s.board_30d||0)+'次</span></div>';mh+='</div></div>'}});mc.innerHTML=mh}}
