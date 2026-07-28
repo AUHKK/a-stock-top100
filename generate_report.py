@@ -471,32 +471,45 @@ def get_baidu_concepts(code):
 
 
 def calc_gains(klines):
-    """从K线计算 日/3日/10日/30日 涨幅"""
+    """从K线计算 3日/10日/30日 涨幅
+
+    K线数量不足以计算对应周期涨幅时，对应字段返回 None，
+    前端 fg() 会将 None 显示为 "-"，避免新股/次新股显示误导性的 0.00%。
+    最少K线要求：3日 4 条，10日 11 条，30日 31 条。
+    注意：daily_gain（当日涨幅）来自东财API行情(f3)，不在此处计算，避免覆盖。
+    """
+    result = {
+        "gain_3d": None,
+        "gain_10d": None,
+        "gain_30d": None,
+    }
     if not klines or len(klines) < 2:
-        return {"daily_gain": 0, "gain_3d": 0, "gain_10d": 0, "gain_30d": 0}
+        return result
+
     closes = [k["close"] for k in klines]
     latest = closes[-1]
-    daily = 0
-    if len(closes) >= 2:
-        daily = (latest / closes[-2] - 1) * 100 if closes[-2] > 0 else 0
-    g3 = 0
+
+    def _ratio(idx):
+        base = closes[idx]
+        if base is None or base <= 0:
+            return None
+        return round((latest / base - 1) * 100, 2)
+
     if len(closes) >= 4:
-        g3 = (latest / closes[-4] - 1) * 100 if closes[-4] > 0 else 0
-    g10 = 0
-    n10 = min(10, len(closes) - 1)
-    if n10 > 0:
-        g10 = (latest / closes[-(n10+1)] - 1) * 100 if closes[-(n10+1)] > 0 else 0
-    g30 = 0
-    n30 = min(30, len(closes) - 1)
-    if n30 > 0:
-        g30 = (latest / closes[-(n30+1)] - 1) * 100 if closes[-(n30+1)] > 0 else 0
-    return {"daily_gain": round(daily, 2), "gain_3d": round(g3, 2),
-            "gain_10d": round(g10, 2), "gain_30d": round(g30, 2)}
+        result["gain_3d"] = _ratio(-4)
+    if len(closes) >= 11:
+        result["gain_10d"] = _ratio(-11)
+    if len(closes) >= 31:
+        result["gain_30d"] = _ratio(-31)
+
+    return result
 
 
 def calc_abnormal(gains, code):
     """距异动/严重异动距离"""
-    g3, g10, g30 = gains.get("gain_3d", 0), gains.get("gain_10d", 0), gains.get("gain_30d", 0)
+    g3 = gains.get("gain_3d") if gains.get("gain_3d") is not None else 0
+    g10 = gains.get("gain_10d") if gains.get("gain_10d") is not None else 0
+    g30 = gains.get("gain_30d") if gains.get("gain_30d") is not None else 0
     is_kc = str(code).startswith("688") or str(code).startswith("300")
     is_bj = str(code).startswith("8")
     da = 20 - abs(g3)
@@ -1090,9 +1103,10 @@ def main():
             s.update(g)
             ok += 1
         else:
-            s["gain_3d"] = 0
-            s["gain_10d"] = 0
-            s["gain_30d"] = 0
+            # K线获取失败时，多日涨幅标记为 None，前端显示为 "-"
+            s["gain_3d"] = None
+            s["gain_10d"] = None
+            s["gain_30d"] = None
         if (i + 1) % 20 == 0:
             print(f"  进度: {i+1}/{len(stocks)}")
     print(f"  成功: {ok}/{len(stocks)}")
